@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Admin & CR Login{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center align-items-center" style="min-height: 80vh;">
+    <div class="col-md-5 col-lg-4">
+        <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+            <div class="bg-primary text-white text-center py-4 px-3">
+                <div class="bg-white text-primary rounded-circle d-inline-flex p-3 mb-2 shadow-sm">
+                    <i class="fa-solid fa-shield-halved fs-2"></i>
+                </div>
+                <h4 class="fw-bold mb-0">Portal Sign In</h4>
+                <p class="small text-white-50 mb-0">Main Admin & CR Attendance Access</p>
+            </div>
+            <div class="card-body p-4">
+                <form method="POST" action="{{ url_for('login') }}">
+                    <div class="mb-3">
+                        <label class="form-label text-secondary small fw-bold">Username</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-user text-muted"></i></span>
+                            <input type="text" name="username" class="form-control border-start-0" placeholder="admin" required autofocus>
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label text-secondary small fw-bold">Password</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-lock text-muted"></i></span>
+                            <input type="password" name="password" class="form-control border-start-0" placeholder="••••••••" required>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold rounded-3 shadow-sm">
+                        <i class="fa-solid fa-right-to-bracket me-1"></i> Sign In
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

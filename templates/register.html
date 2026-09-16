@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% block title %}Register Student{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+            <div class="card-header bg-primary text-white py-3">
+                <h5 class="fw-bold mb-0"><i class="fa-solid fa-user-plus me-2"></i>Student Biometric Enrollment</h5>
+            </div>
+            <div class="card-body p-4">
+                <form method="POST" action="{{ url_for('register_student') }}" enctype="multipart/form-data">
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <h6 class="fw-bold text-secondary mb-3 border-bottom pb-2">Academic & Personal Info</h6>
+                            <div class="mb-3">
+                                <label class="form-label small fw-bold">Roll Number / Student ID <span class="text-danger">*</span></label>
+                                <input type="text" name="roll_number" class="form-control" placeholder="e.g. 24030101" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label small fw-bold">Full Name <span class="text-danger">*</span></label>
+                                <input type="text" name="name" class="form-control" placeholder="e.g. Rahul Sharma" required>
+                            </div>
+                            <div class="row g-2 mb-3">
+                                <div class="col-md-7">
+                                    <label class="form-label small fw-bold">Department <span class="text-danger">*</span></label>
+                                    <select name="department" class="form-select" required>
+                                        <option value="">Select Branch</option>
+                                        <option value="AI & ML">AI & Machine Learning</option>
+                                        <option value="CSE">Computer Science</option>
+                                        <option value="Data Science">Data Science</option>
+                                        <option value="ECE">Electronics & Comm.</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-5">
+                                    <label class="form-label small fw-bold">Semester</label>
+                                    <select name="semester" class="form-select">
+                                        <option value="Sem 8">Sem 8</option>
+                                        <option value="Sem 7">Sem 7</option>
+                                        <option value="Sem 6">Sem 6</option>
+                                        <option value="Sem 5">Sem 5</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label small fw-bold">Email</label>
+                                <input type="email" name="email" class="form-control" placeholder="rahul@example.com">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label small fw-bold">Phone Number</label>
+                                <input type="tel" name="phone" class="form-control" placeholder="+91 9876543210">
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <h6 class="fw-bold text-secondary mb-3 border-bottom pb-2">Facial Biometric Data</h6>
+                            <div class="camera-container text-center bg-dark rounded-3 p-2 mb-3 position-relative" style="min-height: 240px;">
+                                <video id="webcam" autoplay playsinline class="w-100 rounded-2" style="max-height: 230px; object-fit: cover;"></video>
+                                <canvas id="capturedCanvas" class="d-none w-100 rounded-2" style="max-height: 230px;"></canvas>
+                                <input type="hidden" name="webcam_image" id="webcamInput">
+                            </div>
+
+                            <div class="d-flex gap-2 justify-content-center mb-3">
+                                <button type="button" class="btn btn-outline-primary btn-sm" id="btnStartCamera">
+                                    <i class="fa-solid fa-camera me-1"></i> Open Webcam
+                                </button>
+                                <button type="button" class="btn btn-success btn-sm d-none" id="btnCapture">
+                                    <i class="fa-solid fa-camera-retro me-1"></i> Capture Photo
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary btn-sm d-none" id="btnRetake">
+                                    <i class="fa-solid fa-rotate-left me-1"></i> Retake
+                                </button>
+                            </div>
+
+                            <div class="text-center text-muted small my-2">— OR UPLOAD PICTURE —</div>
+
+                            <div class="mb-3">
+                                <input type="file" name="photo" id="filePhoto" class="form-control" accept="image/*">
+                                <small class="text-muted">Ensure front-facing photo, good lighting, and no face coverings.</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr class="my-4">
+                    <div class="d-flex justify-content-end gap-2">
+                        <button type="submit" class="btn btn-primary px-5 fw-bold shadow-sm">
+                            <i class="fa-solid fa-floppy-disk me-1"></i> Complete Face Enrollment
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/camera.js') }}"></script>
+{% endblock %}

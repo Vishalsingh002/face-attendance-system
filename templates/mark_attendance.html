@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+{% block title %}Live Recognition Kiosk{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+            <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center py-3">
+                <span class="fw-bold"><i class="fa-solid fa-expand text-success me-2"></i>Live OpenCV Recognition Stream</span>
+                <span class="badge bg-danger animate-pulse"><i class="fa-solid fa-circle me-1"></i> REC ACTIVE</span>
+            </div>
+            <div class="card-body bg-black text-center p-0 position-relative">
+                <img src="{{ url_for('video_feed') }}" alt="Real-time Face Stream" class="img-fluid w-100" style="min-height: 480px; max-height: 540px; object-fit: contain;">
+                <div class="position-absolute bottom-0 start-0 m-3 p-2 bg-dark bg-opacity-75 text-white rounded-3 small">
+                    <i class="fa-solid fa-volume-high text-warning me-1"></i> Sound & Voice Feedback Active
+                </div>
+            </div>
+            <div class="card-footer bg-light py-2 text-center text-muted small">
+                Camera ke samne aate hi <b>Beep sound</b> aur <b>Voice confirmation</b> aayegi.
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm rounded-4 p-3 h-100">
+            <h5 class="fw-bold mb-3 d-flex align-items-center justify-content-between">
+                <span><i class="fa-solid fa-list-check text-primary me-2"></i>Live Check-In Feed</span>
+                <span class="spinner-grow spinner-grow-sm text-success" role="status"></span>
+            </h5>
+            <div class="list-group list-group-flush" id="liveFeedList">
+                <div class="text-center py-5 text-muted">
+                    <i class="fa-solid fa-spinner fa-spin fs-4 mb-2"></i>
+                    <p class="small mb-0">Scanning for enrolled students...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    let lastAnnouncedStudent = "";
+    let lastAnnounceTime = 0;
+
+    function playSuccessBeep() {
+        try {
+            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(1300, audioCtx.currentTime + 0.15);
+
+            gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.35);
+
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.35);
+        } catch (e) {}
+    }
+
+    function speakAttendance(studentName) {
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.cancel();
+            const text = `Attendance marked for ${studentName}`;
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.rate = 1.05;
+            utterance.pitch = 1.1;
+            window.speechSynthesis.speak(utterance);
+        }
+    }
+
+    function fetchRecentAttendance() {
+        fetch('/api/recent-attendance')
+            .then(res => res.json())
+            .then(data => {
+                const list = document.getElementById('liveFeedList');
+                if (!data || data.length === 0) return;
+
+                const latest = data[0];
+                const now = Date.now();
+
+                if (latest.name !== lastAnnouncedStudent || (now - lastAnnounceTime > 8000)) {
+                    lastAnnouncedStudent = latest.name;
+                    lastAnnounceTime = now;
+                    playSuccessBeep();
+                    speakAttendance(latest.name);
+                }
+
+                list.innerHTML = '';
+                data.forEach(item => {
+                    const row = document.createElement('div');
+                    row.className = 'list-group-item px-0 py-2 border-bottom';
+                    row.innerHTML = `
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="fw-bold mb-0 text-dark">${item.name}</h6>
+                                <small class="text-muted">${item.roll_number}</small>
+                            </div>
+                            <div class="text-end">
+                                <span class="badge bg-success-subtle text-success">${item.time}</span>
+                            </div>
+                        </div>
+                    `;
+                    list.appendChild(row);
+                });
+            })
+            .catch(console.error);
+    }
+
+    setInterval(fetchRecentAttendance, 2000);
+    fetchRecentAttendance();
+</script>
+{% endblock %}

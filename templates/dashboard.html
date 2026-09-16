@@ -1,0 +1,198 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<!-- DYNAMIC DAILY LINK GENERATOR WIDGET -->
+<div class="card border-0 shadow-sm rounded-4 p-4 mb-4 bg-white border-start border-primary border-5">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+        <div>
+            <h5 class="fw-bold mb-1"><i class="fa-solid fa-qrcode text-primary me-2"></i>Daily Mobile Attendance Session</h5>
+            <p class="text-muted small mb-0">Generate a secure daily dynamic link for students to mark attendance from their phones.</p>
+            {% if active_session %}
+            <div class="mt-2">
+                <span class="badge bg-success-subtle text-success border border-success px-3 py-2">
+                    <i class="fa-solid fa-circle-check me-1"></i> ACTIVE SESSION: <b>{{ active_session.session_code }}</b>
+                </span>
+                <span class="text-muted small ms-2">Share this code with students on WhatsApp: <code>/checkin?code={{ active_session.session_code }}</code></span>
+            </div>
+            {% else %}
+            <div class="mt-2">
+                <span class="badge bg-danger-subtle text-danger border border-danger px-3 py-2">
+                    <i class="fa-solid fa-circle-xmark me-1"></i> SESSION CLOSED (Links are currently inactive)
+                </span>
+            </div>
+            {% endif %}
+        </div>
+        <div class="d-flex gap-2">
+            <form method="POST" action="{{ url_for('route_generate_session') }}">
+                <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm">
+                    <i class="fa-solid fa-rotate me-1"></i> Generate New Daily Link
+                </button>
+            </form>
+            {% if active_session %}
+            <form method="POST" action="{{ url_for('route_close_session') }}">
+                <button type="submit" class="btn btn-outline-danger rounded-pill px-3">
+                    <i class="fa-solid fa-lock me-1"></i> Close Session Now
+                </button>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-bold mb-1">Attendance Intelligence Hub</h3>
+        <p class="text-muted small mb-0">Real-time attendance metrics and computer vision statistics</p>
+    </div>
+    <a href="{{ url_for('mark_attendance_page') }}" class="btn btn-primary px-4 py-2 rounded-pill shadow-sm">
+        <i class="fa-solid fa-camera me-1"></i> Launch Recognition Kiosk
+    </a>
+</div>
+
+<!-- KPI Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm rounded-4 p-3 stat-card border-start border-primary border-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <span class="text-muted small fw-semibold">Total Students</span>
+                    <h2 class="fw-bold text-dark mt-1 mb-0">{{ total_students }}</h2>
+                </div>
+                <div class="stat-icon bg-primary-subtle text-primary rounded-3 p-3">
+                    <i class="fa-solid fa-user-graduate fs-3"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm rounded-4 p-3 stat-card border-start border-success border-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <span class="text-muted small fw-semibold">Present Today</span>
+                    <h2 class="fw-bold text-success mt-1 mb-0">{{ today_present }}</h2>
+                </div>
+                <div class="stat-icon bg-success-subtle text-success rounded-3 p-3">
+                    <i class="fa-solid fa-user-check fs-3"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm rounded-4 p-3 stat-card border-start border-danger border-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <span class="text-muted small fw-semibold">Absent Today</span>
+                    <h2 class="fw-bold text-danger mt-1 mb-0">{{ today_absent }}</h2>
+                </div>
+                <div class="stat-icon bg-danger-subtle text-danger rounded-3 p-3">
+                    <i class="fa-solid fa-user-xmark fs-3"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm rounded-4 p-3 stat-card border-start border-info border-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <span class="text-muted small fw-semibold">Today's Turnout</span>
+                    <h2 class="fw-bold text-info mt-1 mb-0">{{ attendance_percentage }}%</h2>
+                </div>
+                <div class="stat-icon bg-info-subtle text-info rounded-3 p-3">
+                    <i class="fa-solid fa-chart-line fs-3"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts -->
+<div class="row g-4 mb-4">
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm rounded-4 p-4 h-100">
+            <h5 class="fw-bold mb-3"><i class="fa-solid fa-chart-area text-primary me-2"></i>Attendance Trends (Last 7 Days)</h5>
+            <canvas id="trendChart" height="120"></canvas>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm rounded-4 p-4 h-100">
+            <h5 class="fw-bold mb-3"><i class="fa-solid fa-chart-pie text-info me-2"></i>Branch Distribution</h5>
+            <canvas id="deptChart" height="160"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Check-ins -->
+<div class="card border-0 shadow-sm rounded-4 p-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="fw-bold mb-0"><i class="fa-solid fa-clock-rotate-left text-success me-2"></i>Recent Check-Ins (Today)</h5>
+        <a href="{{ url_for('attendance_logs') }}" class="btn btn-sm btn-outline-secondary rounded-pill">View All Logs</a>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Roll Number</th>
+                    <th>Name</th>
+                    <th>Department</th>
+                    <th>Time</th>
+                    <th>Confidence</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for record in recent_records %}
+                <tr>
+                    <td class="fw-bold text-primary">{{ record.roll_number }}</td>
+                    <td>{{ record.name }}</td>
+                    <td><span class="badge bg-secondary-subtle text-dark">{{ record.department }}</span></td>
+                    <td>{{ record.time }}</td>
+                    <td><span class="badge bg-info-subtle text-info">{{ record.confidence or 95 }}%</span></td>
+                    <td><span class="badge bg-success-subtle text-success border border-success"><i class="fa-solid fa-check me-1"></i> Present</span></td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6" class="text-center py-4 text-muted">No attendance recorded today yet.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const trendCtx = document.getElementById('trendChart').getContext('2d');
+    new Chart(trendCtx, {
+        type: 'line',
+        data: {
+            labels: {{ trend_dates | tojson }},
+            datasets: [{
+                label: 'Present Students',
+                data: {{ trend_counts | tojson }},
+                borderColor: '#0d6efd',
+                backgroundColor: 'rgba(13, 110, 253, 0.1)',
+                tension: 0.35,
+                fill: true,
+                pointRadius: 5
+            }]
+        },
+        options: { responsive: true, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+    });
+
+    const deptCtx = document.getElementById('deptChart').getContext('2d');
+    new Chart(deptCtx, {
+        type: 'doughnut',
+        data: {
+            labels: {{ dept_labels | tojson }},
+            datasets: [{
+                data: {{ dept_counts | tojson }},
+                backgroundColor: ['#0d6efd', '#198754', '#ffc107', '#0dcaf0', '#6f42c1']
+            }]
+        },
+        options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+    });
+</script>
+{% endblock %}

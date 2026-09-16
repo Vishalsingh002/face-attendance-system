@@ -1,0 +1,6 @@
+venv/
+.env
+*.db
+attendance_system.db
+__pycache__/
+static/uploads/faces/*
