@@ -462,6 +462,6 @@ def api_recent_attendance():
     conn.close()
     return jsonify(rows)
 
-if __name__ == "__main__":
-    print("[SERVER] Starting Smart Face Recognition Attendance System on http://127.0.0.1:5000")
-    app.run(host="0.0.0.0", port=5000, debug=True)
+if __name__ == '__main__':
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port, debug=False)

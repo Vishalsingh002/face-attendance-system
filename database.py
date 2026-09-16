@@ -92,8 +92,8 @@ def init_db():
     """)
 
     # --- SECURE MAIN ADMIN INITIALIZATION FROM .ENV ---
-    admin_user = getattr(Config, "ADMIN_USERNAME", "admin")
-    admin_pass = getattr(Config, "ADMIN_PASSWORD", "admin123")
+    admin_user = getattr(Config, "ADMIN_USERNAME", None) or "admin"
+    admin_pass = getattr(Config, "ADMIN_PASSWORD", None) or "admin123"
 
     cursor.execute("SELECT id FROM admins WHERE role = 'superadmin'")
     existing_superadmin = cursor.fetchone()
