@@ -1,13 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VisionAttend AI - Next-Gen Smart Face Attendance System</title>
-    <meta name="description" content="AI-powered face attendance management system using deep learning 128-d biometric embeddings, live video kiosks, and mobile anti-proxy selfie check-ins.">
-    
+    <title>VisionAttend - Next-Gen Smart Face Attendance System</title>
+    <meta name="description"
+        content="AI-powered face attendance management system using deep learning 128-d biometric embeddings, live video kiosks, and mobile anti-proxy selfie check-ins.">
+
     <!-- Google Fonts & Icons -->
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
@@ -167,9 +170,19 @@
         }
 
         @keyframes scanMotion {
-            0% { top: 10%; opacity: 0.3; }
-            50% { opacity: 1; }
-            100% { top: 90%; opacity: 0.3; }
+            0% {
+                top: 10%;
+                opacity: 0.3;
+            }
+
+            50% {
+                opacity: 1;
+            }
+
+            100% {
+                top: 90%;
+                opacity: 0.3;
+            }
         }
 
         .face-target-box {
@@ -192,10 +205,30 @@
             border-color: #38bdf8;
             border-style: solid;
         }
-        .corner-tl { top: -2px; left: -2px; border-width: 3px 0 0 3px; }
-        .corner-tr { top: -2px; right: -2px; border-width: 3px 3px 0 0; }
-        .corner-bl { bottom: -2px; left: -2px; border-width: 0 0 3px 3px; }
-        .corner-br { bottom: -2px; right: -2px; border-width: 0 3px 3px 0; }
+
+        .corner-tl {
+            top: -2px;
+            left: -2px;
+            border-width: 3px 0 0 3px;
+        }
+
+        .corner-tr {
+            top: -2px;
+            right: -2px;
+            border-width: 3px 3px 0 0;
+        }
+
+        .corner-bl {
+            bottom: -2px;
+            left: -2px;
+            border-width: 0 0 3px 3px;
+        }
+
+        .corner-br {
+            bottom: -2px;
+            right: -2px;
+            border-width: 0 3px 3px 0;
+        }
 
         .scan-badge-floating {
             position: absolute;
@@ -206,7 +239,7 @@
             border-radius: 12px;
             font-size: 0.8rem;
             color: #e2e8f0;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
         }
 
         /* Glass Cards */
@@ -265,6 +298,7 @@
         }
     </style>
 </head>
+
 <body>
 
     <div class="ambient-glow-1"></div>
@@ -273,34 +307,41 @@
     <!-- NAVBAR -->
     <nav class="navbar navbar-expand-lg landing-navbar sticky-top py-3">
         <div class="container">
-            <a class="navbar-brand d-flex align-items-center gap-2 fw-bold text-white text-decoration-none" href="{{ url_for('index') }}">
+            <a class="navbar-brand d-flex align-items-center gap-2 fw-bold text-white text-decoration-none"
+                href="{{ url_for('index') }}">
                 <div class="brand-logo-icon">
                     <i class="fa-solid fa-camera-viewfinder"></i>
                 </div>
                 <span class="fs-4">Vision<span class="text-primary">Attend</span></span>
             </a>
 
-            <button class="navbar-toggler border-0 text-white" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
+            <button class="navbar-toggler border-0 text-white" type="button" data-bs-toggle="collapse"
+                data-bs-target="#navMenu">
                 <i class="fa-solid fa-bars fs-4"></i>
             </button>
 
             <div class="collapse navbar-collapse" id="navMenu">
                 <ul class="navbar-nav mx-auto mb-2 mb-lg-0 gap-3 fw-medium">
-                    <li class="nav-item"><a class="nav-link text-white-50 hover-text-white" href="#features">Features</a></li>
-                    <li class="nav-item"><a class="nav-link text-white-50 hover-text-white" href="#modes">Scanning Modes</a></li>
-                    <li class="nav-item"><a class="nav-link text-white-50 hover-text-white" href="#how-it-works">How It Works</a></li>
+                    <li class="nav-item"><a class="nav-link text-white-50 hover-text-white"
+                            href="#features">Features</a></li>
+                    <li class="nav-item"><a class="nav-link text-white-50 hover-text-white" href="#modes">Scanning
+                            Modes</a></li>
+                    <li class="nav-item"><a class="nav-link text-white-50 hover-text-white" href="#how-it-works">How It
+                            Works</a></li>
                     <li class="nav-item"><a class="nav-link text-white-50 hover-text-white" href="#faq">FAQ</a></li>
-                    <li class="nav-item"><a class="nav-link text-white-50 hover-text-white" href="{{ url_for('about_page') }}">About</a></li>
+                    <li class="nav-item"><a class="nav-link text-white-50 hover-text-white"
+                            href="{{ url_for('about_page') }}">About</a></li>
                 </ul>
 
                 <div class="d-flex align-items-center gap-2">
-                    <a href="{{ url_for('my_attendance') }}" class="btn btn-glass btn-sm rounded-pill px-3 py-2 text-info">
+                    <a href="{{ url_for('my_attendance') }}"
+                        class="btn btn-glass btn-sm rounded-pill px-3 py-2 text-info">
                         <i class="fa-solid fa-chart-pie me-1"></i> Check Attendance
                     </a>
                     <a href="{{ url_for('register_student') }}" class="btn btn-glass btn-sm rounded-pill px-3 py-2">
                         <i class="fa-solid fa-camera text-success me-1"></i> Student Register
                     </a>
-                    
+
                     {% if session.admin_logged_in %}
                     <a href="{{ url_for('dashboard') }}" class="btn btn-gradient-primary btn-sm rounded-pill px-4 py-2">
                         <i class="fa-solid fa-chart-pie me-1"></i> Dashboard
@@ -330,18 +371,21 @@
                     </h1>
 
                     <p class="lead text-white-50 mb-4" style="max-width: 580px;">
-                        Replace manual registers with deep neural 128-d facial recognition. Features real-time kiosk scanning, instant voice confirmation, and mobile anti-proxy selfie check-ins.
+                        Replace manual registers with deep neural 128-d facial recognition. Features real-time kiosk
+                        scanning, instant voice confirmation, and mobile anti-proxy selfie check-ins.
                     </p>
 
                     <!-- Active Session Banner if instructor started a class -->
                     {% if active_session %}
-                    <div class="p-3 mb-4 rounded-4 border border-success bg-success bg-opacity-10 d-inline-flex align-items-center gap-3">
+                    <div
+                        class="p-3 mb-4 rounded-4 border border-success bg-success bg-opacity-10 d-inline-flex align-items-center gap-3">
                         <span class="spinner-grow spinner-grow-sm text-success" role="status"></span>
                         <div>
                             <span class="fw-bold text-white">Live Attendance Session Active:</span>
                             <span class="badge bg-success ms-1">{{ active_session.session_code }}</span>
                         </div>
-                        <a href="/checkin?code={{ active_session.session_code }}" class="btn btn-sm btn-success rounded-pill px-3 py-1 fw-bold">
+                        <a href="/checkin?code={{ active_session.session_code }}"
+                            class="btn btn-sm btn-success rounded-pill px-3 py-1 fw-bold">
                             Check In Now ➔
                         </a>
                     </div>
@@ -375,17 +419,20 @@
                 <!-- Hero Visual Mockup -->
                 <div class="col-lg-5">
                     <div class="scanner-mockup">
-                        <div class="p-3 bg-dark bg-opacity-75 d-flex justify-content-between align-items-center border-bottom border-secondary border-opacity-25">
+                        <div
+                            class="p-3 bg-dark bg-opacity-75 d-flex justify-content-between align-items-center border-bottom border-secondary border-opacity-25">
                             <div class="d-flex align-items-center gap-2">
-                                <span class="badge bg-danger animate-pulse"><i class="fa-solid fa-circle me-1"></i> LIVE STREAM</span>
+                                <span class="badge bg-danger animate-pulse"><i class="fa-solid fa-circle me-1"></i> LIVE
+                                    STREAM</span>
                                 <span class="small text-white-50">Kiosk Node #01</span>
                             </div>
-                            <span class="text-success small fw-semibold"><i class="fa-solid fa-wifi me-1"></i> 60 FPS</span>
+                            <span class="text-success small fw-semibold"><i class="fa-solid fa-wifi me-1"></i> 60
+                                FPS</span>
                         </div>
 
                         <div class="scanner-screen">
                             <div class="laser-line"></div>
-                            
+
                             <div class="face-target-box">
                                 <div class="corner-bracket corner-tl"></div>
                                 <div class="corner-bracket corner-tr"></div>
@@ -414,13 +461,16 @@
                             <div class="scan-badge-floating" style="bottom: 25px; right: 20px;">
                                 <div class="d-flex align-items-center gap-2">
                                     <i class="fa-solid fa-volume-high text-success"></i>
-                                    <span class="fw-semibold text-success" style="font-size: 0.75rem;">Voice Confirmed!</span>
+                                    <span class="fw-semibold text-success" style="font-size: 0.75rem;">Voice
+                                        Confirmed!</span>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="p-3 bg-dark bg-opacity-50 text-center text-white-50 small border-top border-secondary border-opacity-25">
-                            <i class="fa-solid fa-microchip text-primary me-1"></i> Powered by dlib Deep Facial Embeddings
+                        <div
+                            class="p-3 bg-dark bg-opacity-50 text-center text-white-50 small border-top border-secondary border-opacity-25">
+                            <i class="fa-solid fa-microchip text-primary me-1"></i> Powered by dlib Deep Facial
+                            Embeddings
                         </div>
                     </div>
                 </div>
@@ -458,7 +508,8 @@
             <div class="text-center mb-5">
                 <h6 class="text-primary fw-bold text-uppercase tracking-wider">Operational Flexibility</h6>
                 <h2 class="fw-bold text-white">Choose Your Ideal Attendance Workflow</h2>
-                <p class="text-white-50 mx-auto" style="max-width: 620px;">Deploy centralized camera scanners in class or let students verify via their smartphone.</p>
+                <p class="text-white-50 mx-auto" style="max-width: 620px;">Deploy centralized camera scanners in class
+                    or let students verify via their smartphone.</p>
             </div>
 
             <div class="row g-4 justify-content-center">
@@ -468,13 +519,18 @@
                             <i class="fa-solid fa-video"></i>
                         </div>
                         <h4 class="fw-bold text-white mb-2">Centralized Kiosk Mode</h4>
-                        <p class="text-white-50 small mb-4">Instructor or CR runs a continuous video stream. Students walk past the camera; attendance is marked with HUD boxes and audible voice feedback.</p>
+                        <p class="text-white-50 small mb-4">Instructor or CR runs a continuous video stream. Students
+                            walk past the camera; attendance is marked with HUD boxes and audible voice feedback.</p>
                         <ul class="list-unstyled text-white-50 small mb-4 d-flex flex-column gap-2">
-                            <li><i class="fa-solid fa-check text-primary me-2"></i> Real-time OpenCV/dlib live stream</li>
-                            <li><i class="fa-solid fa-check text-primary me-2"></i> Synthesized browser speech feedback</li>
-                            <li><i class="fa-solid fa-check text-primary me-2"></i> 5-second automatic anti-debounce</li>
+                            <li><i class="fa-solid fa-check text-primary me-2"></i> Real-time OpenCV/dlib live stream
+                            </li>
+                            <li><i class="fa-solid fa-check text-primary me-2"></i> Synthesized browser speech feedback
+                            </li>
+                            <li><i class="fa-solid fa-check text-primary me-2"></i> 5-second automatic anti-debounce
+                            </li>
                         </ul>
-                        <a href="{{ url_for('login') }}" class="btn btn-outline-primary rounded-pill w-100 py-2 fw-semibold">
+                        <a href="{{ url_for('login') }}"
+                            class="btn btn-outline-primary rounded-pill w-100 py-2 fw-semibold">
                             Open Kiosk Scanner ➔
                         </a>
                     </div>
@@ -486,13 +542,17 @@
                             <i class="fa-solid fa-mobile-screen-button"></i>
                         </div>
                         <h4 class="fw-bold text-white mb-2">Mobile Self-Checkin (QR Link)</h4>
-                        <p class="text-white-50 small mb-4">Instructor generates a daily 6-character session link. Students open on their phones, type Roll Number, and take a selfie for instant 1:1 biometric verification.</p>
+                        <p class="text-white-50 small mb-4">Instructor generates a daily 6-character session link.
+                            Students open on their phones, type Roll Number, and take a selfie for instant 1:1 biometric
+                            verification.</p>
                         <ul class="list-unstyled text-white-50 small mb-4 d-flex flex-column gap-2">
                             <li><i class="fa-solid fa-check text-info me-2"></i> Daily dynamic code protection</li>
-                            <li><i class="fa-solid fa-check text-info me-2"></i> Instant anti-proxy face match rejection</li>
+                            <li><i class="fa-solid fa-check text-info me-2"></i> Instant anti-proxy face match rejection
+                            </li>
                             <li><i class="fa-solid fa-check text-info me-2"></i> Zero hardware installation needed</li>
                         </ul>
-                        <a href="{{ url_for('register_student') }}" class="btn btn-outline-info rounded-pill w-100 py-2 fw-semibold">
+                        <a href="{{ url_for('register_student') }}"
+                            class="btn btn-outline-info rounded-pill w-100 py-2 fw-semibold">
                             Enroll For Mobile Access ➔
                         </a>
                     </div>
@@ -507,7 +567,8 @@
             <div class="text-center mb-5">
                 <h6 class="text-primary fw-bold text-uppercase tracking-wider">Enterprise Architecture</h6>
                 <h2 class="fw-bold text-white">Engineered For Reliability & Speed</h2>
-                <p class="text-white-50 mx-auto" style="max-width: 620px;">Built on battle-tested Computer Vision models and robust relational storage.</p>
+                <p class="text-white-50 mx-auto" style="max-width: 620px;">Built on battle-tested Computer Vision models
+                    and robust relational storage.</p>
             </div>
 
             <div class="row g-4">
@@ -517,7 +578,8 @@
                             <i class="fa-solid fa-brain"></i>
                         </div>
                         <h5 class="fw-bold text-white mb-2">128-D ResNet Embeddings</h5>
-                        <p class="text-white-50 small mb-0">High-dimensional face encodings generate unique biometric signatures resistant to glasses, hair changes, and mild rotations.</p>
+                        <p class="text-white-50 small mb-0">High-dimensional face encodings generate unique biometric
+                            signatures resistant to glasses, hair changes, and mild rotations.</p>
                     </div>
                 </div>
 
@@ -527,7 +589,8 @@
                             <i class="fa-solid fa-volume-high"></i>
                         </div>
                         <h5 class="fw-bold text-white mb-2">Smart Voice Feedback</h5>
-                        <p class="text-white-50 small mb-0">Browser SpeechSynthesis & Web Audio chime announces the student's name on successful attendance without instructor intervention.</p>
+                        <p class="text-white-50 small mb-0">Browser SpeechSynthesis & Web Audio chime announces the
+                            student's name on successful attendance without instructor intervention.</p>
                     </div>
                 </div>
 
@@ -537,7 +600,8 @@
                             <i class="fa-solid fa-ban"></i>
                         </div>
                         <h5 class="fw-bold text-white mb-2">Anti-Proxy & Anti-Duplicate</h5>
-                        <p class="text-white-50 small mb-0">SQLite UNIQUE constraints strictly restrict students to 1 check-in per calendar date, preventing multiple entries.</p>
+                        <p class="text-white-50 small mb-0">SQLite UNIQUE constraints strictly restrict students to 1
+                            check-in per calendar date, preventing multiple entries.</p>
                     </div>
                 </div>
 
@@ -547,7 +611,8 @@
                             <i class="fa-solid fa-chart-line"></i>
                         </div>
                         <h5 class="fw-bold text-white mb-2">Real-Time Analytics</h5>
-                        <p class="text-white-50 small mb-0">Interactive 7-day attendance trends, present vs absent turnout percentage, and branch distributions powered by Chart.js.</p>
+                        <p class="text-white-50 small mb-0">Interactive 7-day attendance trends, present vs absent
+                            turnout percentage, and branch distributions powered by Chart.js.</p>
                     </div>
                 </div>
 
@@ -557,7 +622,8 @@
                             <i class="fa-solid fa-user-shield"></i>
                         </div>
                         <h5 class="fw-bold text-white mb-2">Multi-Tier RBAC</h5>
-                        <p class="text-white-50 small mb-0">Superadmin, Faculty, and Class Representative (CR) roles with granular permission levels ensuring data protection.</p>
+                        <p class="text-white-50 small mb-0">Superadmin, Faculty, and Class Representative (CR) roles
+                            with granular permission levels ensuring data protection.</p>
                     </div>
                 </div>
 
@@ -567,7 +633,8 @@
                             <i class="fa-solid fa-file-excel"></i>
                         </div>
                         <h5 class="fw-bold text-white mb-2">Instant Excel & CSV Export</h5>
-                        <p class="text-white-50 small mb-0">Filter by specific dates and engineering branches to export formatted `.xlsx` and `.csv` audit spreadsheets in one click.</p>
+                        <p class="text-white-50 small mb-0">Filter by specific dates and engineering branches to export
+                            formatted `.xlsx` and `.csv` audit spreadsheets in one click.</p>
                     </div>
                 </div>
             </div>
@@ -587,7 +654,8 @@
                     <div class="glass-card p-4 h-100">
                         <div class="step-number mx-auto">1</div>
                         <h5 class="fw-bold text-white mb-2">One-Time Enrollment</h5>
-                        <p class="text-white-50 small mb-0">Student captures a selfie via webcam or uploads a picture. The AI validates face presence and extracts 128 mathematical landmarks.</p>
+                        <p class="text-white-50 small mb-0">Student captures a selfie via webcam or uploads a picture.
+                            The AI validates face presence and extracts 128 mathematical landmarks.</p>
                     </div>
                 </div>
 
@@ -595,7 +663,8 @@
                     <div class="glass-card p-4 h-100">
                         <div class="step-number mx-auto">2</div>
                         <h5 class="fw-bold text-white mb-2">Facial Recognition</h5>
-                        <p class="text-white-50 small mb-0">Live video feed matches faces in real-time with tolerance threshold comparison. Name and roll number are identified instantly.</p>
+                        <p class="text-white-50 small mb-0">Live video feed matches faces in real-time with tolerance
+                            threshold comparison. Name and roll number are identified instantly.</p>
                     </div>
                 </div>
 
@@ -603,7 +672,8 @@
                     <div class="glass-card p-4 h-100">
                         <div class="step-number mx-auto">3</div>
                         <h5 class="fw-bold text-white mb-2">Instant Logging & Voice</h5>
-                        <p class="text-white-50 small mb-0">Attendance record is logged with timestamp, match confidence score, and verified status. Name is spoken aloud automatically.</p>
+                        <p class="text-white-50 small mb-0">Attendance record is logged with timestamp, match confidence
+                            score, and verified status. Name is spoken aloud automatically.</p>
                     </div>
                 </div>
             </div>
@@ -621,39 +691,46 @@
             <div class="accordion accordion-flush" id="faqAccordion">
                 <div class="accordion-item bg-transparent border-bottom border-secondary border-opacity-25 py-2">
                     <h2 class="accordion-header">
-                        <button class="accordion-button collapsed bg-transparent text-white fw-bold shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+                        <button class="accordion-button collapsed bg-transparent text-white fw-bold shadow-none"
+                            type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
                             Does it work without expensive CCTV or proprietary hardware?
                         </button>
                     </h2>
                     <div id="faq1" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
                         <div class="accordion-body text-white-50 small">
-                            Yes! VisionAttend works with any standard laptop webcam, USB webcam, or student smartphone cameras through WebRTC. No proprietary sensors are needed.
+                            Yes! VisionAttend works with any standard laptop webcam, USB webcam, or student smartphone
+                            cameras through WebRTC. No proprietary sensors are needed.
                         </div>
                     </div>
                 </div>
 
                 <div class="accordion-item bg-transparent border-bottom border-secondary border-opacity-25 py-2">
                     <h2 class="accordion-header">
-                        <button class="accordion-button collapsed bg-transparent text-white fw-bold shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+                        <button class="accordion-button collapsed bg-transparent text-white fw-bold shadow-none"
+                            type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
                             Can students proxy for their friends?
                         </button>
                     </h2>
                     <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
                         <div class="accordion-body text-white-50 small">
-                            No. On the mobile check-in portal, entering a roll number requires capturing a live front-camera selfie. The backend compares the live selfie against the enrolled student's biometric signature; if it fails to match, the proxy attempt is immediately rejected.
+                            No. On the mobile check-in portal, entering a roll number requires capturing a live
+                            front-camera selfie. The backend compares the live selfie against the enrolled student's
+                            biometric signature; if it fails to match, the proxy attempt is immediately rejected.
                         </div>
                     </div>
                 </div>
 
                 <div class="accordion-item bg-transparent border-bottom border-secondary border-opacity-25 py-2">
                     <h2 class="accordion-header">
-                        <button class="accordion-button collapsed bg-transparent text-white fw-bold shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
+                        <button class="accordion-button collapsed bg-transparent text-white fw-bold shadow-none"
+                            type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
                             Can Class Representatives (CRs) delete student data?
                         </button>
                     </h2>
                     <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
                         <div class="accordion-body text-white-50 small">
-                            No. Role-based access control restricts CR accounts to scanning and viewing logs. Only the Super Administrator has authorization to delete students or create new sub-admin accounts.
+                            No. Role-based access control restricts CR accounts to scanning and viewing logs. Only the
+                            Super Administrator has authorization to delete students or create new sub-admin accounts.
                         </div>
                     </div>
                 </div>
@@ -664,7 +741,8 @@
     <!-- CTA BANNER -->
     <section class="py-5 text-center position-relative">
         <div class="container py-4">
-            <div class="glass-card p-5 mx-auto" style="max-width: 850px; background: linear-gradient(145deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.95) 100%);">
+            <div class="glass-card p-5 mx-auto"
+                style="max-width: 850px; background: linear-gradient(145deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.95) 100%);">
                 <h2 class="fw-bold text-gradient mb-3">Upgrade Your Institution's Attendance Today</h2>
                 <p class="text-white-50 mb-4 mx-auto" style="max-width: 550px;">
                     Experience seamless, zero-touch facial biometric tracking with instantaneous verification.
@@ -694,19 +772,26 @@
                     </div>
                     <p class="text-white-50 small mb-2">Autonomous Face Recognition & Class Attendance System.</p>
                     <div class="d-flex flex-wrap gap-3 justify-content-center justify-content-md-start small pt-1">
-                        <a href="{{ url_for('about_page') }}" class="text-white-50 text-decoration-none hover-white">About Us</a>
+                        <a href="{{ url_for('about_page') }}"
+                            class="text-white-50 text-decoration-none hover-white">About Us</a>
                         <span class="text-secondary opacity-50">&bull;</span>
-                        <a href="{{ url_for('privacy_page') }}" class="text-white-50 text-decoration-none hover-white">Privacy Policy</a>
+                        <a href="{{ url_for('privacy_page') }}"
+                            class="text-white-50 text-decoration-none hover-white">Privacy Policy</a>
                         <span class="text-secondary opacity-50">&bull;</span>
-                        <a href="{{ url_for('terms_page') }}" class="text-white-50 text-decoration-none hover-white">Terms & Conditions</a>
+                        <a href="{{ url_for('terms_page') }}"
+                            class="text-white-50 text-decoration-none hover-white">Terms & Conditions</a>
                         <span class="text-secondary opacity-50">&bull;</span>
-                        <a href="{{ url_for('my_attendance') }}" class="text-info text-decoration-none hover-white">Student Portal</a>
+                        <a href="{{ url_for('my_attendance') }}"
+                            class="text-info text-decoration-none hover-white">Student Portal</a>
                     </div>
                 </div>
                 <div class="col-md-6 text-center text-md-end">
-                    <div class="d-inline-flex align-items-center gap-2 bg-dark px-3 py-1 rounded-pill small border border-secondary border-opacity-25 mb-2">
-                        <span class="spinner-grow spinner-grow-sm text-success" style="width: 8px; height: 8px;" role="status"></span>
-                        <span class="text-white-50" style="font-size: 0.8rem;">All AI Verification Engines Operational</span>
+                    <div
+                        class="d-inline-flex align-items-center gap-2 bg-dark px-3 py-1 rounded-pill small border border-secondary border-opacity-25 mb-2">
+                        <span class="spinner-grow spinner-grow-sm text-success" style="width: 8px; height: 8px;"
+                            role="status"></span>
+                        <span class="text-white-50" style="font-size: 0.8rem;">All AI Verification Engines
+                            Operational</span>
                     </div>
                     <div class="text-white-50 small">
                         &copy; 2026 VisionAttend. Built with Python, Flask, OpenCV & dlib.
@@ -718,4 +803,5 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
+
 </html>
