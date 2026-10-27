@@ -1,116 +1,123 @@
 # 🎓 VisionAttend - AI Face Attendance System
 
-A modern, full-stack facial recognition attendance management system built with **Python Flask**, **dlib / face_recognition**, and **OpenCV**.
+A modern, enterprise-grade facial recognition attendance management system built with **Python Flask**, **dlib / face_recognition**, and **OpenCV**.
 
 ---
 
-## 🚀 Quick Start (For New Users)
+## ✨ Key Features
 
-### Option 1: 1-Click Launch (Windows)
-Simply double-click `run.bat` in the project root folder, or in your terminal:
-```cmd
-.\run.bat
-```
-
-### Option 2: Run via Terminal
-Make sure to run with the project's virtual environment (`venv`) where all dependencies (`dlib`, `face_recognition`, `OpenCV`) are installed:
-
-#### **PowerShell:**
-```powershell
-cd d:\DONE_Project\face-attendance-system
-.\venv\Scripts\python.exe app.py
-```
-
-#### **Command Prompt (CMD):**
-```cmd
-cd /d d:\DONE_Project\face-attendance-system
-venv\Scripts\python.exe app.py
-```
+- **Autonomous Facial Biometric Recognition:** Sub-200ms recognition latency powered by ResNet 128-dimensional landmark embeddings.
+- **Smart Classroom Kiosk:** Real-time multi-face tracking with live bounding boxes, match confidence scores, and automatic audio voice announcements.
+- **Anti-Proxy & Duplicate Prevention:** Restricts students to one check-in per calendar date; verifies live selfies against enrolled facial landmarks for mobile check-ins.
+- **Student Attendance Self-Service Portal (`/my-attendance`):** Roll number self-lookup showing attendance percentages, safe-zone examination eligibility indicators (75%+), and timestamped audit logs.
+- **Role-Based Access Control (RBAC):** Granular access levels for Super Administrators, Faculty, and Class Representatives (CRs).
+- **Hybrid Cloud & Local Architecture:** Runs 100% offline out-of-the-box with local SQLite and disk storage; supports **Google Firebase** and **Turso Cloud LibSQL** database synchronization.
+- **Instant Excel & CSV Export:** Download comprehensive formatted spreadsheets filtered by date and department.
 
 ---
 
-## 🔑 Login Credentials
+## 🚀 Quick Start Guide
 
-- **URL:** [http://127.0.0.1:5000](http://127.0.0.1:5000)
-- **Super Admin Username:** `admin`
-- **Super Admin Password:** `admin123`
+### 1. Clone & Set Up Environment
+
+```bash
+# Clone repository
+git clone https://github.com/Vishalsingh002/face-attendance-system.git
+cd face-attendance-system
+
+# Create and activate virtual environment
+python -m venv venv
+
+# Windows (PowerShell):
+.\venv\Scripts\activate
+
+# Linux / macOS:
+source venv/bin/activate
+```
+
+### 2. Install Dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+### 3. Configure Environment Variables
+
+Create your local `.env` file from the example template:
+
+```bash
+cp .env.example .env
+```
+
+Set your desired credentials and security keys inside `.env`:
+- `ADMIN_USERNAME`: Your chosen administrator username
+- `ADMIN_PASSWORD`: Your chosen administrator password
+- `SECRET_KEY`: A secure random secret key for session management
+
+### 4. Run the Application
+
+```bash
+python app.py
+```
+
+Or double-click `run.bat` on Windows.
+
+Open your browser at: **[http://localhost:5000](http://localhost:5000)**
 
 ---
 
 ## 👥 How to Use
 
-### 1. Student Attendance Self-Service Portal (`/my-attendance`)
-Students can check their own real-time attendance report anytime:
-- Enter Roll Number.
-- Shows total classes held, classes attended, classes absent.
+### 1. Student Attendance Portal (`/my-attendance`)
+- Enter student Roll Number.
+- View total classes held, classes attended, and current turnout percentage.
 - Real-time **Examination Eligibility Status** (🟢 Safe Zone >= 75% or 🔴 Shortage Warning < 75%).
-- Timestamped logs of every class check-in with biometric match confidence.
+- Detailed timestamped log of every verified class check-in.
 
-### 2. Register a New Student Face (`/register`)
-1. Go to **Students** ➔ **Enroll New Student** (or directly `/register`).
-2. Enter Roll Number, Full Name, Department, and Semester.
-3. Open the camera to capture a live selfie or upload a front-facing photo.
-4. Click **Complete Face Enrollment**.
-5. The 128-dimensional facial embedding is extracted and saved to SQLite database.
+### 2. Student Enrollment (`/register`)
+- Enter student Roll Number, Name, Department, and Semester.
+- Capture a live selfie via camera or upload a clear front-facing photograph.
+- The 128-dimensional biometric vector is extracted and securely stored.
 
-### 2. Mark Attendance (Live Scanner Kiosk)
-1. Go to **Live Scanner** (`/mark-attendance`).
-2. Point your camera at students.
-3. When recognized:
-   - Visual bounding box with name, roll number, and confidence percentage.
-   - Immediate audio chime and voice announcement (*"Attendance marked for [Name]"*).
-   - Duplicate prevention stops multiple check-ins on the same day.
+### 3. Live Recognition Kiosk (`/mark-attendance`)
+- Position the camera towards entering students.
+- System detects and matches faces in real time.
+- Voice feedback automatically announces the student's name on successful check-in.
 
-### 3. Mark Attendance (Mobile Self-Checkin)
-1. On the **Dashboard**, click **Generate New Daily Link**.
-2. Share the generated code (or URL: `http://<YOUR_IP>:5000/checkin?code=XXXXXX`) with students.
-3. Students open the link on their smartphone, enter their Roll Number, and take a selfie.
-4. AI verifies the selfie against their registered face to prevent proxy attendance.
+### 4. Mobile Check-In Sessions (`/checkin`)
+- Faculty generates a temporary dynamic session token from the Dashboard.
+- Students open the check-in URL on their smartphones, enter their Roll Number, and take a live selfie.
+- AI validates facial similarity to ensure physical attendance without proxy.
 
-### 4. Manage Class Representatives (CRs)
-- Super Admins can create sub-admin accounts for Class Representatives (`/manage-crs`).
-- CRs can run the scanner and view attendance, but cannot delete records or manage other admin accounts.
-
-### 5. Export Reports
-- Navigate to **Reports** (`/attendance`).
-- Filter by date or department.
-- Export as **CSV** or formatted **Excel (.xlsx)** spreadsheet.
+### 5. Reports & Analytics (`/attendance`)
+- View attendance trends and branch-wise distributions.
+- Export filtered audit reports as **CSV** or formatted **Excel (.xlsx)** spreadsheets.
 
 ---
 
-## 🛠️ Fresh Installation (If Setting Up on a New PC)
+## ☁️ Cloud Architecture & Hybrid Sync (Optional)
 
-```bash
-# 1. Clone repository & create venv
-python -m venv venv
+The application operates 100% offline with zero cloud dependencies. For distributed deployments, configure the following in `.env`:
 
-# 2. Activate venv
-.\venv\Scripts\activate
+### 1. Turso Cloud Database (LibSQL)
+- Distributed cloud database synchronized with local SQLite.
+- Configure `TURSO_DATABASE_URL` and `TURSO_AUTH_TOKEN` in `.env`.
 
-# 3. Install dependencies
-pip install -r requirements.txt
-
-# 4. Start app
-python app.py
-```
+### 2. Google Firebase Storage
+- Cloud object storage for enrolled student photographs.
+- Configure `FIREBASE_STORAGE_BUCKET`, `FIREBASE_API_KEY`, and `FIREBASE_PROJECT_ID` in `.env`.
 
 ---
 
-## ☁️ Optional Cloud Integrations (Firebase & Turso)
+## 🔒 Biometric Privacy & Security
 
-Project supports automatic hybrid mode: runs 100% offline with local storage, and seamlessly connects to cloud when credentials are added in `.env`:
+- **Landmark Vectors:** Facial representations are stored as serialized 128-dimensional floating-point vectors, which cannot be reverse-engineered into original photographs.
+- **Local Autonomy:** When running in local mode, no biometric data leaves the institutional server.
+- **Cryptographic Hashing:** All system passwords are protected using PBKDF2 with SHA-256 password hashing.
+- **Session Protection:** Configurable inactivity timeouts and CSRF protections.
 
-### 1. Google Firebase Storage (For Student Photos):
-1. Create a free project on [Firebase Console](https://console.firebase.google.com).
-2. Enable **Storage**.
-3. In **Project Settings ➔ Service Accounts**, click **Generate new private key** and save it as `firebase_credentials.json` in the project root.
-4. Set `FIREBASE_STORAGE_BUCKET=your-bucket.appspot.com` in `.env`.
+---
 
-### 2. Turso Cloud Database (For Attendance Records & Biometrics):
-1. Create free cloud SQLite database at [turso.tech](https://turso.tech).
-2. Copy your database URL and token into `.env`:
-   ```env
-   TURSO_DATABASE_URL=libsql://your-db.turso.io
-   TURSO_AUTH_TOKEN=your-token-here
-   ```
+## 📄 License
 
+This project is open-source and available under the [MIT License](LICENSE).
