@@ -20,6 +20,7 @@ class Config:
     # Secret Admin credentials with safe fallbacks
     ADMIN_USERNAME = os.getenv("ADMIN_USERNAME") or "admin"
     ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD") or "admin123"
+    ADMIN_EMAIL = os.getenv("ADMIN_EMAIL", "").strip()
 
     # Cloud Storage (Google Firebase)
     FIREBASE_CREDENTIALS_PATH = os.getenv("FIREBASE_CREDENTIALS_PATH", "firebase_credentials.json")

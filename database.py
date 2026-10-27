@@ -122,6 +122,7 @@ def init_db():
     # --- SECURE MAIN ADMIN INITIALIZATION FROM .ENV ---
     admin_user = getattr(Config, "ADMIN_USERNAME", None) or "admin"
     admin_pass = getattr(Config, "ADMIN_PASSWORD", None) or "admin123"
+    admin_email = getattr(Config, "ADMIN_EMAIL", "").strip().lower()
 
     cursor.execute("SELECT id FROM admins WHERE role = 'superadmin'")
     existing_superadmin = cursor.fetchone()
@@ -130,18 +131,25 @@ def init_db():
         # Create Super Admin from .env
         hashed_pw = generate_password_hash(admin_pass)
         cursor.execute("""
-            INSERT INTO admins (username, password_hash, role)
-            VALUES (?, ?, 'superadmin')
-        """, (admin_user, hashed_pw))
+            INSERT INTO admins (username, password_hash, role, email)
+            VALUES (?, ?, 'superadmin', ?)
+        """, (admin_user, hashed_pw, admin_email or None))
         print(f"[DB] Initialized Master Admin from environment config: {admin_user}")
     else:
         # Auto-update credentials if changed in .env
         hashed_pw = generate_password_hash(admin_pass)
-        cursor.execute("""
-            UPDATE admins 
-            SET username = ?, password_hash = ? 
-            WHERE id = ?
-        """, (admin_user, hashed_pw, existing_superadmin["id"]))
+        if admin_email:
+            cursor.execute("""
+                UPDATE admins 
+                SET username = ?, password_hash = ?, email = ?
+                WHERE id = ?
+            """, (admin_user, hashed_pw, admin_email, existing_superadmin["id"]))
+        else:
+            cursor.execute("""
+                UPDATE admins 
+                SET username = ?, password_hash = ? 
+                WHERE id = ?
+            """, (admin_user, hashed_pw, existing_superadmin["id"]))
 
     conn.commit()
     conn.close()
@@ -301,23 +309,30 @@ def get_or_create_google_user(email, name=""):
     cursor = conn.cursor()
     clean_email = email.strip().lower()
     default_username = clean_email.split("@")[0].replace(".", "_")
+    admin_email = getattr(Config, "ADMIN_EMAIL", "").strip().lower()
+    admin_username = (getattr(Config, "ADMIN_USERNAME", None) or "admin").strip().lower()
+    is_superadmin = (admin_email and clean_email == admin_email) or (default_username == admin_username)
 
     # 1. Search by email or username
     cursor.execute("SELECT * FROM admins WHERE email = ? OR username = ?", (clean_email, default_username))
     user = cursor.fetchone()
 
     if user:
+        if is_superadmin and user["role"] != "superadmin":
+            cursor.execute("UPDATE admins SET role = 'superadmin' WHERE id = ?", (user["id"],))
+            conn.commit()
         if not user.get("email"):
             cursor.execute("UPDATE admins SET email = ? WHERE id = ?", (clean_email, user["id"]))
             conn.commit()
-        user_dict = dict(user)
+        cursor.execute("SELECT * FROM admins WHERE id = ?", (user["id"],))
+        user_dict = dict(cursor.fetchone())
         conn.close()
         return user_dict
 
-    # 2. Register as new faculty member
+    # 2. Register as new member (superadmin if matching ADMIN_EMAIL or ADMIN_USERNAME, otherwise faculty)
     random_pw = secrets.token_hex(16)
     hashed_pw = generate_password_hash(random_pw)
-    role = "faculty"
+    role = "superadmin" if is_superadmin else "faculty"
 
     cursor.execute("""
         INSERT INTO admins (username, password_hash, role, email)
