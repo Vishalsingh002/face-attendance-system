@@ -18,12 +18,9 @@ A modern, enterprise-grade facial recognition attendance management system built
 
 ## 🚀 Quick Start Guide
 
-### 1. Clone & Set Up Environment
+### 1.Set Up Environment
 
 ```bash
-# Clone repository
-git clone https://github.com/Vishalsingh002/face-attendance-system.git
-cd face-attendance-system
 
 # Create and activate virtual environment
 python -m venv venv
