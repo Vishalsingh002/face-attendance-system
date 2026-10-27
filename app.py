@@ -573,7 +573,12 @@ def export_attendance():
         params.append(filter_dept)
 
     query += " ORDER BY date DESC, time DESC"
-    df = pd.read_sql_query(query, conn, params=params)
+    cursor = conn.cursor()
+    cursor.execute(query, params)
+    rows = cursor.fetchall()
+    columns = ["roll_number", "name", "department", "date", "time", "status", "confidence"]
+    data = [[r[col] for col in columns] for r in rows]
+    df = pd.DataFrame(data, columns=columns)
     conn.close()
 
     filename = f"attendance_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}"

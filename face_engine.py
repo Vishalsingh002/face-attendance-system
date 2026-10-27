@@ -207,6 +207,17 @@ def generate_video_stream():
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
 
+    if not cap.isOpened():
+        # Server hardware webcam not detected (e.g., Cloud VPS / Render / No webcam)
+        placeholder = np.zeros((480, 640, 3), dtype=np.uint8)
+        cv2.putText(placeholder, "Hardware Camera Not Detected", (80, 220), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 165, 255), 2)
+        cv2.putText(placeholder, "Use Student Mobile / QR Self Check-In", (95, 265), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (200, 200, 200), 1)
+        ret, buffer = cv2.imencode('.jpg', placeholder)
+        if ret:
+            yield (b'--frame\r\n'
+                   b'Content-Type: image/jpeg\r\n\r\n' + buffer.tobytes() + b'\r\n')
+        return
+
     try:
         while True:
             success, frame = cap.read()

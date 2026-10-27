@@ -33,7 +33,11 @@
                 <tr>
                     <td>
                         {% if s.photo_path %}
-                        <img src="{{ url_for('static', filename='uploads/faces/' + s.photo_path) }}" alt="Photo" class="rounded-circle border" style="width: 42px; height: 42px; object-fit: cover;">
+                            {% if s.photo_path.startswith('http') %}
+                            <img src="{{ s.photo_path }}" alt="Photo" class="rounded-circle border" style="width: 42px; height: 42px; object-fit: cover;">
+                            {% else %}
+                            <img src="{{ url_for('static', filename='uploads/faces/' + s.photo_path) }}" alt="Photo" class="rounded-circle border" style="width: 42px; height: 42px; object-fit: cover;">
+                            {% endif %}
                         {% else %}
                         <div class="rounded-circle bg-secondary text-white d-inline-flex justify-content-center align-items-center" style="width: 42px; height: 42px;">
                             <i class="fa-solid fa-user"></i>

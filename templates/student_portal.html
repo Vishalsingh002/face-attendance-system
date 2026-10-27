@@ -208,7 +208,11 @@
                 <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
                     <div class="d-flex align-items-center gap-3">
                         {% if student.photo_path %}
-                        <img src="{{ url_for('static', filename='uploads/faces/' + student.photo_path) }}" alt="{{ student.name }}" class="rounded-circle border border-primary border-3" style="width: 72px; height: 72px; object-fit: cover;">
+                            {% if student.photo_path.startswith('http') %}
+                            <img src="{{ student.photo_path }}" alt="{{ student.name }}" class="rounded-circle border border-primary border-3" style="width: 72px; height: 72px; object-fit: cover;">
+                            {% else %}
+                            <img src="{{ url_for('static', filename='uploads/faces/' + student.photo_path) }}" alt="{{ student.name }}" class="rounded-circle border border-primary border-3" style="width: 72px; height: 72px; object-fit: cover;">
+                            {% endif %}
                         {% else %}
                         <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" style="width: 72px; height: 72px;">
                             <i class="fa-solid fa-user fs-2"></i>
