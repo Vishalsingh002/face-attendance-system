@@ -46,11 +46,6 @@ Create your local `.env` file from the example template:
 cp .env.example .env
 ```
 
-Set your desired credentials and security keys inside `.env`:
-- `ADMIN_USERNAME`: Your chosen administrator username
-- `ADMIN_PASSWORD`: Your chosen administrator password
-- `SECRET_KEY`: A secure random secret key for session management
-
 ### 4. Run the Application
 
 ```bash
