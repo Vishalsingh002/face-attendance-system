@@ -1,39 +1,853 @@
-{% extends "base.html" %}
-{% block title %}Admin & CR Login{% endblock %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal Authentication - VisionAttend AI</title>
+    <meta name="description" content="Sign In or Register for VisionAttend Face Attendance Management System.">
+    
+    <!-- Google Fonts & FontAwesome -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
 
-{% block content %}
-<div class="row justify-content-center align-items-center" style="min-height: 80vh;">
-    <div class="col-md-5 col-lg-4">
-        <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
-            <div class="bg-primary text-white text-center py-4 px-3">
-                <div class="bg-white text-primary rounded-circle d-inline-flex p-3 mb-2 shadow-sm">
-                    <i class="fa-solid fa-shield-halved fs-2"></i>
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+            --accent-glow: rgba(99, 102, 241, 0.3);
+            --dark-bg: #090d16;
+            --glass-bg: rgba(18, 26, 43, 0.75);
+            --glass-border: rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            background-color: var(--dark-bg);
+            color: #f1f5f9;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Ambient Glow Highlights */
+        .ambient-glow-top {
+            position: absolute;
+            top: -150px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 800px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(99, 102, 241, 0.18) 0%, transparent 65%);
+            filter: blur(100px);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .ambient-glow-bottom {
+            position: absolute;
+            bottom: -150px;
+            right: -100px;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(56, 189, 248, 0.15) 0%, transparent 65%);
+            filter: blur(110px);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Top Navigation Bar */
+        .auth-topbar {
+            padding: 20px 0;
+            z-index: 10;
+        }
+
+        .brand-logo-badge {
+            background: var(--primary-gradient);
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            box-shadow: 0 4px 15px var(--accent-glow);
+        }
+
+        .btn-back-home {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid var(--glass-border);
+            color: #cbd5e1;
+            font-size: 0.88rem;
+            font-weight: 600;
+            padding: 8px 18px;
+            border-radius: 50px;
+            text-decoration: none;
+            transition: all 0.25s ease;
+            backdrop-filter: blur(8px);
+        }
+
+        .btn-back-home:hover {
+            background: rgba(255, 255, 255, 0.12);
+            color: white;
+            transform: translateX(-3px);
+        }
+
+        /* Main Auth Card */
+        .auth-main-card {
+            background: #ffffff;
+            border-radius: 28px;
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5), 0 0 1px rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            overflow: hidden;
+            z-index: 1;
+            position: relative;
+        }
+
+        /* Left Hero Banner */
+        .auth-side-banner {
+            background: linear-gradient(155deg, #0f172a 0%, #1e1b4b 60%, #1e293b 100%);
+            position: relative;
+            overflow: hidden;
+            color: white;
+        }
+
+        .auth-side-banner::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 80% 20%, rgba(99, 102, 241, 0.25) 0%, transparent 60%);
+            pointer-events: none;
+        }
+
+        /* Simulated Face Scanner Reticle */
+        .scanner-visual-box {
+            width: 140px;
+            height: 160px;
+            border: 2px dashed rgba(56, 189, 248, 0.45);
+            border-radius: 20px;
+            position: relative;
+            margin: 0 auto 20px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: radial-gradient(circle, rgba(56, 189, 248, 0.08) 0%, transparent 70%);
+        }
+
+        .corner-point {
+            position: absolute;
+            width: 14px;
+            height: 14px;
+            border-color: #38bdf8;
+            border-style: solid;
+        }
+        .cp-tl { top: -2px; left: -2px; border-width: 3px 0 0 3px; }
+        .cp-tr { top: -2px; right: -2px; border-width: 3px 3px 0 0; }
+        .cp-bl { bottom: -2px; left: -2px; border-width: 0 0 3px 3px; }
+        .cp-br { bottom: -2px; right: -2px; border-width: 0 3px 3px 0; }
+
+        .scan-laser-beam {
+            position: absolute;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #38bdf8, transparent);
+            box-shadow: 0 0 10px #38bdf8;
+            top: 0;
+            animation: laserMove 2.5s infinite alternate ease-in-out;
+        }
+
+        @keyframes laserMove {
+            0% { top: 10%; opacity: 0.3; }
+            50% { opacity: 1; }
+            100% { top: 90%; opacity: 0.3; }
+        }
+
+        /* Dual Pill Tab Switcher */
+        .auth-segmented-control {
+            background: #f1f5f9;
+            border-radius: 16px;
+            padding: 5px;
+            display: flex;
+            gap: 6px;
+            position: relative;
+        }
+
+        .auth-tab-btn {
+            flex: 1;
+            border: none;
+            background: transparent;
+            padding: 12px 18px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: #64748b;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .auth-tab-btn.active {
+            background: #ffffff;
+            color: #1e293b;
+            box-shadow: 0 4px 16px rgba(15, 23, 42, 0.1);
+        }
+
+        /* Form Inputs */
+        .form-floating-custom {
+            position: relative;
+        }
+
+        .input-icon-wrapper {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+            font-size: 1rem;
+            z-index: 4;
+            pointer-events: none;
+        }
+
+        .form-control-pro {
+            border-radius: 14px;
+            padding: 13px 16px 13px 44px;
+            border: 1.5px solid #e2e8f0;
+            background-color: #f8fafc;
+            color: #1e293b;
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .form-control-pro:focus {
+            background-color: #ffffff;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.12);
+            color: #1e293b;
+        }
+
+        .password-toggle-btn {
+            position: absolute;
+            right: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: transparent;
+            border: none;
+            color: #94a3b8;
+            font-size: 1rem;
+            cursor: pointer;
+            z-index: 5;
+            padding: 6px;
+        }
+
+        .password-toggle-btn:hover {
+            color: #334155;
+        }
+
+        /* Submit Buttons */
+        .btn-gradient-submit {
+            background: var(--primary-gradient);
+            border: none;
+            color: white;
+            font-weight: 700;
+            font-size: 1rem;
+            padding: 13px 24px;
+            border-radius: 14px;
+            box-shadow: 0 8px 24px rgba(37, 99, 235, 0.3);
+            transition: all 0.25s ease;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-gradient-submit:hover {
+            background: linear-gradient(135deg, #1d4ed8 0%, #6d28d9 100%);
+            box-shadow: 0 12px 28px rgba(37, 99, 235, 0.45);
+            transform: translateY(-2px);
+            color: white;
+        }
+
+        /* Password Strength Meter */
+        .strength-bar-container {
+            height: 4px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            margin-top: 6px;
+            overflow: hidden;
+        }
+
+        .strength-bar {
+            height: 100%;
+            width: 0%;
+            transition: all 0.3s ease;
+        }
+
+        /* Student Callout Banner */
+        .student-portal-cta {
+            background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+            border: 1.5px dashed #86efac;
+            border-radius: 18px;
+            padding: 16px 20px;
+            transition: all 0.25s ease;
+        }
+
+        .student-portal-cta:hover {
+            background: #dcfce7;
+            border-color: #4ade80;
+            transform: translateY(-2px);
+        }
+
+        /* Custom Alert */
+        .alert-pro {
+            border-radius: 14px;
+            padding: 14px 18px;
+            font-size: 0.92rem;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="ambient-glow-top"></div>
+    <div class="ambient-glow-bottom"></div>
+
+    <!-- TOPBAR -->
+    <header class="auth-topbar">
+        <div class="container">
+            <div class="d-flex align-items-center justify-content-between">
+                <a href="{{ url_for('index') }}" class="d-flex align-items-center gap-2 text-decoration-none text-white">
+                    <div class="brand-logo-badge">
+                        <i class="fa-solid fa-camera-viewfinder fs-5"></i>
+                    </div>
+                    <div>
+                        <span class="fs-4 fw-bold">Vision<span class="text-primary">Attend</span></span>
+                        <span class="badge bg-primary bg-opacity-25 text-primary border border-primary border-opacity-25 ms-1" style="font-size: 0.7rem;">AI v2.0</span>
+                    </div>
+                </a>
+
+                <div class="d-flex align-items-center gap-3">
+                    <span class="d-none d-md-inline-flex align-items-center gap-2 text-white-50 small bg-dark bg-opacity-50 px-3 py-1 rounded-pill border border-white border-opacity-10">
+                        <span class="spinner-grow spinner-grow-sm text-success" role="status" style="width: 8px; height: 8px;"></span>
+                        <span>Biometrics Engine Ready</span>
+                    </span>
+                    <a href="{{ url_for('index') }}" class="btn-back-home">
+                        <i class="fa-solid fa-arrow-left me-1"></i> Back to Home
+                    </a>
                 </div>
-                <h4 class="fw-bold mb-0">Portal Sign In</h4>
-                <p class="small text-white-50 mb-0">Main Admin & CR Attendance Access</p>
             </div>
-            <div class="card-body p-4">
-                <form method="POST" action="{{ url_for('login') }}">
-                    <div class="mb-3">
-                        <label class="form-label text-secondary small fw-bold">Username</label>
-                        <div class="input-group">
-                            <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-user text-muted"></i></span>
-                            <input type="text" name="username" class="form-control border-start-0" placeholder="admin" required autofocus>
+        </div>
+    </header>
+
+    <!-- MAIN AUTH CONTENT -->
+    <main class="flex-grow-1 d-flex align-items-center py-4">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-xl-10 col-lg-11">
+                    <div class="auth-main-card">
+                        <div class="row g-0">
+                            <!-- Left Hero / Brand Side -->
+                            <div class="col-lg-5 auth-side-banner p-4 p-md-5 d-flex flex-column justify-content-between">
+                                <div>
+                                    <div class="d-inline-flex align-items-center gap-2 bg-white bg-opacity-10 border border-white border-opacity-20 px-3 py-1 rounded-pill small mb-4">
+                                        <i class="fa-solid fa-shield-halved text-warning"></i>
+                                        <span class="fw-semibold">Role-Based Enterprise Access</span>
+                                    </div>
+
+                                    <h3 class="fw-bold mb-2">Automated Attendance Portal</h3>
+                                    <p class="text-white-50 small mb-4">Sign in or register as an Instructor, Super Administrator, or Class Representative (CR).</p>
+
+                                    <!-- Interactive Biometric Animation Box -->
+                                    <div class="scanner-visual-box">
+                                        <div class="scan-laser-beam"></div>
+                                        <div class="corner-point cp-tl"></div>
+                                        <div class="corner-point cp-tr"></div>
+                                        <div class="corner-point cp-bl"></div>
+                                        <div class="corner-point cp-br"></div>
+                                        <i class="fa-solid fa-face-viewfinder text-info" style="font-size: 3.5rem; opacity: 0.85;"></i>
+                                    </div>
+
+                                    <div class="d-flex flex-column gap-3 mb-4">
+                                        <div class="d-flex align-items-center gap-3">
+                                            <div class="rounded-3 bg-white bg-opacity-10 p-2 text-primary">
+                                                <i class="fa-solid fa-microchip fs-5"></i>
+                                            </div>
+                                            <div>
+                                                <div class="fw-bold small text-white">128-D Deep Neural Landmarks</div>
+                                                <div class="text-white-50" style="font-size: 0.78rem;">High precision, real-time recognition</div>
+                                            </div>
+                                        </div>
+
+                                        <div class="d-flex align-items-center gap-3">
+                                            <div class="rounded-3 bg-white bg-opacity-10 p-2 text-success">
+                                                <i class="fa-solid fa-bolt fs-5"></i>
+                                            </div>
+                                            <div>
+                                                <div class="fw-bold small text-white">&lt; 0.2s Scan Latency</div>
+                                                <div class="text-white-50" style="font-size: 0.78rem;">Audible voice feedback and zero queue times</div>
+                                            </div>
+                                        </div>
+
+                                        <div class="d-flex align-items-center gap-3">
+                                            <div class="rounded-3 bg-white bg-opacity-10 p-2 text-warning">
+                                                <i class="fa-solid fa-file-shield fs-5"></i>
+                                            </div>
+                                            <div>
+                                                <div class="fw-bold small text-white">Excel & CSV Reports</div>
+                                                <div class="text-white-50" style="font-size: 0.78rem;">Filter by date & department with 1-click export</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="pt-3 border-top border-white border-opacity-10 text-white-50 small d-flex justify-content-between align-items-center">
+                                    <span><i class="fa-solid fa-lock text-success me-1"></i> 256-Bit SSL Encrypted</span>
+                                    <span>v2.0 Stable</span>
+                                </div>
+                            </div>
+
+                            <!-- Right Auth Forms Side -->
+                            <div class="col-lg-7 p-4 p-md-5 bg-white text-dark">
+                                <!-- Dual Tab Segmented Control -->
+                                <div class="auth-segmented-control mb-4">
+                                    <button type="button" class="auth-tab-btn {% if active_tab != 'signup' %}active{% endif %}" id="btnTabSignIn">
+                                        <i class="fa-solid fa-right-to-bracket"></i>
+                                        <span>Sign In</span>
+                                    </button>
+                                    <button type="button" class="auth-tab-btn {% if active_tab == 'signup' %}active{% endif %}" id="btnTabSignUp">
+                                        <i class="fa-solid fa-user-plus"></i>
+                                        <span>Create Account</span>
+                                    </button>
+                                </div>
+
+                                <!-- Flashed Messages -->
+                                {% with messages = get_flashed_messages(with_categories=true) %}
+                                    {% if messages %}
+                                        {% for category, message in messages %}
+                                            <div class="alert alert-{{ category }} alert-pro alert-dismissible fade show mb-4 shadow-sm" role="alert">
+                                                <div class="d-flex align-items-center">
+                                                    <i class="fa-solid {% if category == 'success' %}fa-circle-check text-success{% elif category == 'danger' %}fa-triangle-exclamation text-danger{% else %}fa-circle-info text-info{% endif %} fs-5 me-2"></i>
+                                                    <div class="fw-medium">{{ message }}</div>
+                                                </div>
+                                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                            </div>
+                                        {% endfor %}
+                                    {% endif %}
+                                {% endwith %}
+
+                                <!-- 1. SIGN IN FORM -->
+                                <div id="panelSignIn" class="{% if active_tab == 'signup' %}d-none{% endif %}">
+                                    <div class="mb-4">
+                                        <h4 class="fw-bold text-dark mb-1">Welcome Back 👋</h4>
+                                        <p class="text-muted small mb-0">Sign in to launch the kiosk scanner and view analytics.</p>
+                                    </div>
+
+                                    <form method="POST" action="{{ url_for('login') }}">
+                                        <div class="mb-3">
+                                            <label class="form-label small fw-bold text-secondary">Username</label>
+                                            <div class="form-floating-custom">
+                                                <i class="fa-solid fa-user input-icon-wrapper"></i>
+                                                <input type="text" name="username" class="form-control form-control-pro" placeholder="Enter your username" required autofocus>
+                                            </div>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                                <label class="form-label small fw-bold text-secondary mb-0">Password</label>
+                                                <a href="javascript:void(0)" onclick="openForgotModal()" class="small text-primary text-decoration-none fw-semibold">Forgot password?</a>
+                                            </div>
+                                            <div class="form-floating-custom">
+                                                <i class="fa-solid fa-lock input-icon-wrapper"></i>
+                                                <input type="password" name="password" id="inputLoginPass" class="form-control form-control-pro" placeholder="Enter your password" required>
+                                                <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('inputLoginPass', this)">
+                                                    <i class="fa-solid fa-eye"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <div class="d-flex justify-content-between align-items-center mb-4">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="rememberMe" checked>
+                                                <label class="form-check-label small text-muted" for="rememberMe">
+                                                    Remember this device
+                                                </label>
+                                            </div>
+                                        </div>
+
+                                        <button type="submit" class="btn btn-gradient-submit mb-3">
+                                            <span>Sign In to Portal</span>
+                                            <i class="fa-solid fa-arrow-right"></i>
+                                        </button>
+
+                                        <div class="d-flex align-items-center my-3">
+                                            <hr class="flex-grow-1 border-secondary border-opacity-25 my-0">
+                                            <span class="px-2 text-muted" style="font-size: 0.72rem; letter-spacing: 0.5px;">OR CONTINUE WITH</span>
+                                            <hr class="flex-grow-1 border-secondary border-opacity-25 my-0">
+                                        </div>
+
+                                        <button type="button" class="btn btn-outline-secondary w-100 rounded-pill py-2 d-flex align-items-center justify-content-center gap-2 fw-semibold mb-3 bg-white" onclick="triggerGoogleSignIn()">
+                                            <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.616z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z"/><path fill="#FBBC05" d="M3.964 10.707c-.18-.54-.282-1.117-.282-1.707 0-.59.102-1.167.282-1.707V4.961H.957C.347 6.175 0 7.55 0 9s.347 2.825.957 4.039l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.961L3.964 7.293C4.672 5.166 6.656 3.58 9 3.58z"/></svg>
+                                            <span class="text-dark small">Sign In with Google</span>
+                                        </button>
+
+                                        <div class="text-center text-muted small">
+                                            New instructor or faculty? 
+                                            <a href="javascript:void(0)" onclick="setAuthTab('signup')" class="fw-bold text-primary text-decoration-none ms-1">Create Account</a>
+                                        </div>
+                                    </form>
+                                </div>
+
+                                <!-- 2. SIGN UP FORM -->
+                                <div id="panelSignUp" class="{% if active_tab != 'signup' %}d-none{% endif %}">
+                                    <div class="mb-4">
+                                        <h4 class="fw-bold text-dark mb-1">Create Account 🚀</h4>
+                                        <p class="text-muted small mb-0">Register as Faculty, Administrator, or Class Representative.</p>
+                                    </div>
+
+                                    <form method="POST" action="{{ url_for('signup') }}" id="formSignUp">
+                                        <div class="mb-3">
+                                            <label class="form-label small fw-bold text-secondary">Choose Username <span class="text-danger">*</span></label>
+                                            <div class="form-floating-custom">
+                                                <i class="fa-solid fa-at input-icon-wrapper"></i>
+                                                <input type="text" name="username" class="form-control form-control-pro" placeholder="e.g. prof_sharma" required>
+                                            </div>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label class="form-label small fw-bold text-secondary">Account Role <span class="text-danger">*</span></label>
+                                            <div class="form-floating-custom">
+                                                <i class="fa-solid fa-user-gear input-icon-wrapper"></i>
+                                                <select name="role" class="form-select form-control-pro" required>
+                                                    <option value="faculty" selected>Faculty / Instructor (Scanner & Logs Access)</option>
+                                                    <option value="admin">Administrator (Full System Control)</option>
+                                                    <option value="cr">Class Representative (CR - Scanner Mode)</option>
+                                                </select>
+                                            </div>
+                                        </div>
+
+                                        <div class="row g-3 mb-2">
+                                            <div class="col-sm-6">
+                                                <label class="form-label small fw-bold text-secondary">Password <span class="text-danger">*</span></label>
+                                                <div class="form-floating-custom">
+                                                    <i class="fa-solid fa-key input-icon-wrapper"></i>
+                                                    <input type="password" name="password" id="inputRegPass" class="form-control form-control-pro" placeholder="Min 6 chars" minlength="6" required oninput="checkPassStrength(this.value)">
+                                                    <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('inputRegPass', this)">
+                                                        <i class="fa-solid fa-eye"></i>
+                                                    </button>
+                                                </div>
+                                                <div class="strength-bar-container">
+                                                    <div class="strength-bar" id="passStrengthBar"></div>
+                                                </div>
+                                                <small class="text-muted" style="font-size: 0.72rem;" id="passStrengthText">Strength: Too short</small>
+                                            </div>
+
+                                            <div class="col-sm-6">
+                                                <label class="form-label small fw-bold text-secondary">Confirm Password <span class="text-danger">*</span></label>
+                                                <div class="form-floating-custom">
+                                                    <i class="fa-solid fa-check-double input-icon-wrapper"></i>
+                                                    <input type="password" name="confirm_password" id="inputRegConfirm" class="form-control form-control-pro" placeholder="Repeat password" minlength="6" required oninput="checkPassMatch()">
+                                                    <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('inputRegConfirm', this)">
+                                                        <i class="fa-solid fa-eye"></i>
+                                                    </button>
+                                                </div>
+                                                <small class="text-muted" style="font-size: 0.72rem;" id="passMatchText">Must match password</small>
+                                            </div>
+                                        </div>
+
+                                        <button type="submit" class="btn btn-gradient-submit my-3">
+                                            <span>Complete Sign Up</span>
+                                            <i class="fa-solid fa-check"></i>
+                                        </button>
+
+                                        <div class="d-flex align-items-center my-3">
+                                            <hr class="flex-grow-1 border-secondary border-opacity-25 my-0">
+                                            <span class="px-2 text-muted" style="font-size: 0.72rem; letter-spacing: 0.5px;">OR SIGN UP WITH</span>
+                                            <hr class="flex-grow-1 border-secondary border-opacity-25 my-0">
+                                        </div>
+
+                                        <button type="button" class="btn btn-outline-secondary w-100 rounded-pill py-2 d-flex align-items-center justify-content-center gap-2 fw-semibold mb-3 bg-white" onclick="triggerGoogleSignIn()">
+                                            <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.616z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z"/><path fill="#FBBC05" d="M3.964 10.707c-.18-.54-.282-1.117-.282-1.707 0-.59.102-1.167.282-1.707V4.961H.957C.347 6.175 0 7.55 0 9s.347 2.825.957 4.039l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.961L3.964 7.293C4.672 5.166 6.656 3.58 9 3.58z"/></svg>
+                                            <span class="text-dark small">Sign Up with Google</span>
+                                        </button>
+
+                                        <div class="text-center text-muted small">
+                                            Already registered? 
+                                            <a href="javascript:void(0)" onclick="setAuthTab('signin')" class="fw-bold text-primary text-decoration-none ms-1">Sign In instead</a>
+                                        </div>
+                                    </form>
+                                </div>
+
+                                <!-- Student Face Enrollment Callout -->
+                                <div class="student-portal-cta mt-4">
+                                    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                                        <div class="d-flex align-items-center gap-3">
+                                            <div class="rounded-circle bg-success text-white p-2 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                                <i class="fa-solid fa-graduation-cap fs-5"></i>
+                                            </div>
+                                            <div>
+                                                <div class="fw-bold text-dark small mb-0">Are you a Student?</div>
+                                                <div class="text-muted" style="font-size: 0.78rem;">No password needed — Enroll face biometric with camera</div>
+                                            </div>
+                                        </div>
+                                        <a href="{{ url_for('register_student') }}" class="btn btn-success btn-sm rounded-pill px-3 py-1 fw-bold">
+                                            Enroll Face ➔
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <div class="mb-4">
-                        <label class="form-label text-secondary small fw-bold">Password</label>
-                        <div class="input-group">
-                            <span class="input-group-text bg-light border-end-0"><i class="fa-solid fa-lock text-muted"></i></span>
-                            <input type="password" name="password" class="form-control border-start-0" placeholder="••••••••" required>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="py-3 text-white-50 small border-top border-secondary border-opacity-10 position-relative z-index-1">
+        <div class="container d-flex flex-wrap align-items-center justify-content-between gap-3 text-center text-sm-start">
+            <span>&copy; 2026 VisionAttend AI. Powered by dlib 128-D Biometric Neural Networks.</span>
+            <div class="d-flex flex-wrap justify-content-center gap-3">
+                <a href="{{ url_for('about_page') }}" class="text-white-50 text-decoration-none">About Us</a>
+                <span class="text-secondary opacity-50">&bull;</span>
+                <a href="{{ url_for('privacy_page') }}" class="text-white-50 text-decoration-none">Privacy Policy</a>
+                <span class="text-secondary opacity-50">&bull;</span>
+                <a href="{{ url_for('terms_page') }}" class="text-white-50 text-decoration-none">Terms & Conditions</a>
+                <span class="text-secondary opacity-50">&bull;</span>
+                <a href="{{ url_for('index') }}" class="text-white-50 text-decoration-none">Home</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- FORGOT PASSWORD MODAL -->
+    <div class="modal fade" id="forgotPasswordModal" tabindex="-1" aria-labelledby="forgotModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-4 border-0 shadow-lg" style="background: #ffffff;">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold text-dark d-flex align-items-center gap-2" id="forgotModalLabel">
+                        <i class="fa-solid fa-key text-primary"></i> Reset Your Password
+                    </h5>
+                    <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body pt-2 pb-4">
+                    <p class="text-muted small mb-3">
+                        Enter your username or email address and choose a new password.
+                    </p>
+
+                    <form method="POST" action="{{ url_for('forgot_password') }}" id="forgotPassForm">
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-secondary">Username or Email <span class="text-danger">*</span></label>
+                            <div class="form-floating-custom">
+                                <i class="fa-solid fa-user input-icon-wrapper"></i>
+                                <input type="text" name="username_or_email" class="form-control form-control-pro" placeholder="e.g. Vishal_92 or email" required>
+                            </div>
                         </div>
-                    </div>
-                    <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold rounded-3 shadow-sm">
-                        <i class="fa-solid fa-right-to-bracket me-1"></i> Sign In
-                    </button>
-                </form>
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-secondary">New Password <span class="text-danger">*</span></label>
+                            <div class="form-floating-custom">
+                                <i class="fa-solid fa-lock input-icon-wrapper"></i>
+                                <input type="password" name="new_password" id="inputResetPass" class="form-control form-control-pro" placeholder="Min 6 characters" minlength="6" required>
+                                <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('inputResetPass', this)">
+                                    <i class="fa-solid fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-secondary">Confirm New Password <span class="text-danger">*</span></label>
+                            <div class="form-floating-custom">
+                                <i class="fa-solid fa-check-double input-icon-wrapper"></i>
+                                <input type="password" name="confirm_password" id="inputResetConfirm" class="form-control form-control-pro" placeholder="Repeat new password" minlength="6" required>
+                                <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('inputResetConfirm', this)">
+                                    <i class="fa-solid fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100 py-2 rounded-pill fw-bold shadow-sm mt-3">
+                            <i class="fa-solid fa-shield-halved me-1"></i> Update Password & Sign In
+                        </button>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
-</div>
-{% endblock %}
+
+    <!-- Bootstrap Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Firebase SDK (Google Sign In) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "{{ firebase_config.apiKey }}",
+            authDomain: "{{ firebase_config.authDomain }}",
+            projectId: "{{ firebase_config.projectId }}",
+            storageBucket: "{{ firebase_config.storageBucket }}"
+        };
+
+        let auth = null;
+        let provider = null;
+
+        try {
+            if (firebaseConfig.apiKey) {
+                const app = initializeApp(firebaseConfig);
+                auth = getAuth(app);
+                provider = new GoogleAuthProvider();
+            }
+        } catch (e) {
+            console.warn("Firebase Auth Init:", e);
+        }
+
+        window.triggerGoogleSignIn = async function() {
+            if (!auth || !provider) {
+                alert("Firebase configuration is not active. Please check your settings.");
+                return;
+            }
+            const btn = event.currentTarget;
+            const originalHtml = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span>Connecting to Google...`;
+
+            try {
+                const result = await signInWithPopup(auth, provider);
+                const user = result.user;
+                
+                const response = await fetch("/api/auth/google", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        email: user.email,
+                        name: user.displayName || user.email.split('@')[0],
+                        uid: user.uid
+                    })
+                });
+
+                const data = await response.json();
+                if (data.success && data.redirect) {
+                    window.location.href = data.redirect;
+                } else {
+                    alert(data.message || "Google Sign-In failed.");
+                    btn.disabled = false;
+                    btn.innerHTML = originalHtml;
+                }
+            } catch (error) {
+                console.error("Google Sign-In Error:", error);
+                alert(error.message || "Google Sign-In cancelled or failed.");
+                btn.disabled = false;
+                btn.innerHTML = originalHtml;
+            }
+        };
+    </script>
+
+    <script>
+        const btnTabSignIn = document.getElementById('btnTabSignIn');
+        const btnTabSignUp = document.getElementById('btnTabSignUp');
+        const panelSignIn = document.getElementById('panelSignIn');
+        const panelSignUp = document.getElementById('panelSignUp');
+
+        function setAuthTab(tabName) {
+            if (tabName === 'signup') {
+                btnTabSignUp.classList.add('active');
+                btnTabSignIn.classList.remove('active');
+                panelSignUp.classList.remove('d-none');
+                panelSignIn.classList.add('d-none');
+                window.history.replaceState(null, null, '?tab=signup');
+            } else {
+                btnTabSignIn.classList.add('active');
+                btnTabSignUp.classList.remove('active');
+                panelSignIn.classList.remove('d-none');
+                panelSignUp.classList.add('d-none');
+                window.history.replaceState(null, null, '?tab=signin');
+            }
+        }
+
+        btnTabSignIn.addEventListener('click', () => setAuthTab('signin'));
+        btnTabSignUp.addEventListener('click', () => setAuthTab('signup'));
+
+        function openForgotModal() {
+            const modalEl = document.getElementById('forgotPasswordModal');
+            const modal = new bootstrap.Modal(modalEl);
+            modal.show();
+        }
+
+        // Toggle Password Show/Hide
+        function togglePasswordVisibility(inputId, btn) {
+            const input = document.getElementById(inputId);
+            const icon = btn.querySelector('i');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.className = 'fa-solid fa-eye-slash text-primary';
+            } else {
+                input.type = 'password';
+                icon.className = 'fa-solid fa-eye';
+            }
+        }
+
+        // Live Password Strength Meter
+        function checkPassStrength(val) {
+            const bar = document.getElementById('passStrengthBar');
+            const text = document.getElementById('passStrengthText');
+            if (!val || val.length < 6) {
+                bar.style.width = '20%';
+                bar.style.backgroundColor = '#ef4444';
+                text.innerText = 'Strength: Weak (min 6 characters)';
+                text.className = 'text-danger';
+            } else if (val.length < 9) {
+                bar.style.width = '60%';
+                bar.style.backgroundColor = '#f59e0b';
+                text.innerText = 'Strength: Medium';
+                text.className = 'text-warning';
+            } else {
+                bar.style.width = '100%';
+                bar.style.backgroundColor = '#10b981';
+                text.innerText = 'Strength: Strong';
+                text.className = 'text-success';
+            }
+            checkPassMatch();
+        }
+
+        // Live Password Match Check
+        function checkPassMatch() {
+            const pass = document.getElementById('inputRegPass').value;
+            const confirm = document.getElementById('inputRegConfirm').value;
+            const text = document.getElementById('passMatchText');
+
+            if (!confirm) {
+                text.innerText = 'Must match password';
+                text.className = 'text-muted';
+                return;
+            }
+
+            if (pass === confirm) {
+                text.innerHTML = '<i class="fa-solid fa-circle-check text-success me-1"></i> Passwords match!';
+                text.className = 'text-success fw-semibold';
+            } else {
+                text.innerHTML = '<i class="fa-solid fa-circle-xmark text-danger me-1"></i> Passwords do not match';
+                text.className = 'text-danger fw-semibold';
+            }
+        }
+
+        // Auto-dismiss alerts after 6 seconds
+        document.addEventListener("DOMContentLoaded", () => {
+            setTimeout(() => {
+                const alerts = document.querySelectorAll('.alert-dismissible');
+                alerts.forEach(a => {
+                    const bsAlert = new bootstrap.Alert(a);
+                    bsAlert.close();
+                });
+            }, 6000);
+        });
+    </script>
+</body>
+</html>

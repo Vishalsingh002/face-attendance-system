@@ -3,4 +3,7 @@ venv/
 *.db
 attendance_system.db
 __pycache__/
+*.pyc
 static/uploads/faces/*
+firebase_credentials*.json
+*.sqlite3

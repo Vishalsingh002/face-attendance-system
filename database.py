@@ -8,9 +8,32 @@ from datetime import datetime
 from werkzeug.security import generate_password_hash
 from config import Config
 
+import threading
+
+def play_hardware_beep(freq, duration):
+    """Plays hardware beep in a background daemon thread so it never blocks Flask."""
+    def _beep():
+        try:
+            import winsound
+            winsound.Beep(freq, duration)
+        except Exception:
+            pass
+    threading.Thread(target=_beep, daemon=True).start()
+
+from turso_db import get_turso_connection
+
 def get_db_connection():
+    # If Turso Cloud database is configured in .env, connect to Turso
+    turso_conn = get_turso_connection()
+    if turso_conn is not None:
+        return turso_conn
+    # Otherwise, seamlessly fall back to local SQLite
     conn = sqlite3.connect(Config.DATABASE_PATH)
     conn.row_factory = sqlite3.Row
+    try:
+        conn.execute("PRAGMA foreign_keys = ON")
+    except Exception:
+        pass
     return conn
 
 def init_db():
@@ -34,7 +57,12 @@ def init_db():
     """)
     try:
         cursor.execute("ALTER TABLE admins ADD COLUMN role TEXT DEFAULT 'superadmin'")
-    except sqlite3.OperationalError:
+    except Exception:
+        pass
+
+    try:
+        cursor.execute("ALTER TABLE admins ADD COLUMN email TEXT")
+    except Exception:
         pass
 
     # 2. Students Table
@@ -179,20 +207,12 @@ def mark_attendance_in_db(student_id, roll_number, name, department, confidence=
         conn.commit()
 
         # Hardware Beep Sound on Success
-        try:
-            import winsound
-            winsound.Beep(1200, 250)
-        except Exception:
-            pass
+        play_hardware_beep(1200, 200)
 
         return "SUCCESS", f"Attendance marked for {name} ({roll_number}) at {current_time}"
     except sqlite3.IntegrityError:
         # Hardware Alert Sound on Duplicate
-        try:
-            import winsound
-            winsound.Beep(600, 180)
-        except Exception:
-            pass
+        play_hardware_beep(600, 150)
         return "DUPLICATE", f"{name} ({roll_number}) already checked in today."
     except Exception as e:
         return "ERROR", str(e)
@@ -207,6 +227,22 @@ def get_all_crs():
     crs = cursor.fetchall()
     conn.close()
     return crs
+
+def register_user_account(username, password, role="faculty"):
+    """Registers a new faculty/admin user account."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    try:
+        hashed = generate_password_hash(password)
+        cursor.execute("INSERT INTO admins (username, password_hash, role) VALUES (?, ?, ?)", (username.strip(), hashed, role.strip().lower()))
+        conn.commit()
+        return True, f"Account '{username}' created successfully!"
+    except sqlite3.IntegrityError:
+        return False, f"Username '{username}' is already taken. Please choose another."
+    except Exception as e:
+        return False, str(e)
+    finally:
+        conn.close()
 
 def add_new_cr(username, password):
     conn = get_db_connection()
@@ -255,6 +291,65 @@ def close_active_session():
     cursor.execute("UPDATE daily_sessions SET is_active = 0")
     conn.commit()
     conn.close()
+
+def get_or_create_google_user(email, name=""):
+    """
+    Finds existing admin/faculty by email or username, or registers them automatically via Google OAuth.
+    """
+    import secrets
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    clean_email = email.strip().lower()
+    default_username = clean_email.split("@")[0].replace(".", "_")
+
+    # 1. Search by email or username
+    cursor.execute("SELECT * FROM admins WHERE email = ? OR username = ?", (clean_email, default_username))
+    user = cursor.fetchone()
+
+    if user:
+        if not user.get("email"):
+            cursor.execute("UPDATE admins SET email = ? WHERE id = ?", (clean_email, user["id"]))
+            conn.commit()
+        user_dict = dict(user)
+        conn.close()
+        return user_dict
+
+    # 2. Register as new faculty member
+    random_pw = secrets.token_hex(16)
+    hashed_pw = generate_password_hash(random_pw)
+    role = "faculty"
+
+    cursor.execute("""
+        INSERT INTO admins (username, password_hash, role, email)
+        VALUES (?, ?, ?, ?)
+    """, (default_username, hashed_pw, role, clean_email))
+    conn.commit()
+
+    cursor.execute("SELECT * FROM admins WHERE username = ?", (default_username,))
+    new_user = dict(cursor.fetchone())
+    conn.close()
+    return new_user
+
+def reset_user_password(username_or_email, new_password):
+    """
+    Resets the password for a user identified by username or email.
+    """
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    target = username_or_email.strip()
+
+    cursor.execute("SELECT id, username FROM admins WHERE username = ? OR email = ?", (target, target.lower()))
+    user = cursor.fetchone()
+
+    if not user:
+        conn.close()
+        return False, "No account found matching this username or email."
+
+    hashed_pw = generate_password_hash(new_password)
+    cursor.execute("UPDATE admins SET password_hash = ? WHERE id = ?", (hashed_pw, user["id"]))
+    conn.commit()
+    conn.close()
+    return True, f"Password for '{user['username']}' updated successfully!"
 
 # Ensure tables & admin are initialized
 init_db()

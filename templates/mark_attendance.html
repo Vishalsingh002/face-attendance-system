@@ -40,8 +40,8 @@
 
 {% block scripts %}
 <script>
-    let lastAnnouncedStudent = "";
-    let lastAnnounceTime = 0;
+    let announcedRecordKeys = new Set();
+    let isInitialLoad = true;
 
     function playSuccessBeep() {
         try {
@@ -79,16 +79,26 @@
             .then(res => res.json())
             .then(data => {
                 const list = document.getElementById('liveFeedList');
-                if (!data || data.length === 0) return;
+                if (!data || data.length === 0) {
+                    isInitialLoad = false;
+                    return;
+                }
 
-                const latest = data[0];
-                const now = Date.now();
-
-                if (latest.name !== lastAnnouncedStudent || (now - lastAnnounceTime > 8000)) {
-                    lastAnnouncedStudent = latest.name;
-                    lastAnnounceTime = now;
-                    playSuccessBeep();
-                    speakAttendance(latest.name);
+                // If first time loading page, register existing records so they don't announce historic check-ins
+                if (isInitialLoad) {
+                    data.forEach(item => {
+                        announcedRecordKeys.add(item.roll_number + '@' + item.time);
+                    });
+                    isInitialLoad = false;
+                } else {
+                    // Check if there is a brand new check-in
+                    const latest = data[0];
+                    const latestKey = latest.roll_number + '@' + latest.time;
+                    if (!announcedRecordKeys.has(latestKey)) {
+                        announcedRecordKeys.add(latestKey);
+                        playSuccessBeep();
+                        speakAttendance(latest.name);
+                    }
                 }
 
                 list.innerHTML = '';

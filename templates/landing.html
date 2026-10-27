@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VisionAttend AI - Next-Gen Smart Face Attendance System</title>
+    <meta name="description" content="AI-powered face attendance management system using deep learning 128-d biometric embeddings, live video kiosks, and mobile anti-proxy selfie check-ins.">
+    
+    <!-- Google Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+            --accent-glow: rgba(99, 102, 241, 0.25);
+            --dark-bg: #090d16;
+            --card-glass: rgba(18, 26, 43, 0.75);
+            --card-border: rgba(255, 255, 255, 0.08);
+        }
+
+        body {
+            background-color: var(--dark-bg);
+            color: #f1f5f9;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            overflow-x: hidden;
+        }
+
+        /* Ambient Background Glows */
+        .ambient-glow-1 {
+            position: absolute;
+            top: -100px;
+            left: -100px;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(59, 130, 246, 0.15) 0%, transparent 70%);
+            filter: blur(80px);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .ambient-glow-2 {
+            position: absolute;
+            top: 250px;
+            right: -100px;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(139, 92, 246, 0.18) 0%, transparent 70%);
+            filter: blur(90px);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Navbar */
+        .landing-navbar {
+            background: rgba(9, 13, 22, 0.85);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--card-border);
+            z-index: 1000;
+        }
+
+        .brand-logo-icon {
+            background: var(--primary-gradient);
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            box-shadow: 0 4px 15px var(--accent-glow);
+        }
+
+        /* Hero Text & Badges */
+        .hero-pill {
+            background: rgba(99, 102, 241, 0.12);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            color: #a5b4fc;
+            font-size: 0.85rem;
+            font-weight: 600;
+            padding: 6px 16px;
+            border-radius: 50px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .text-gradient {
+            background: linear-gradient(135deg, #ffffff 30%, #93c5fd 70%, #c4b5fd 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Action Buttons */
+        .btn-gradient-primary {
+            background: var(--primary-gradient);
+            border: none;
+            color: white;
+            font-weight: 700;
+            padding: 14px 28px;
+            border-radius: 50px;
+            box-shadow: 0 8px 24px rgba(99, 102, 241, 0.35);
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-gradient-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 30px rgba(99, 102, 241, 0.5);
+            color: white;
+        }
+
+        .btn-glass {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--card-border);
+            color: #e2e8f0;
+            font-weight: 600;
+            padding: 14px 26px;
+            border-radius: 50px;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-glass:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        /* Interactive Scanner Mockup */
+        .scanner-mockup {
+            background: #0f172a;
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .scanner-screen {
+            background: linear-gradient(180deg, #0b1120 0%, #030712 100%);
+            height: 380px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .laser-line {
+            position: absolute;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #38bdf8, #818cf8, transparent);
+            box-shadow: 0 0 15px #38bdf8;
+            top: 0;
+            animation: scanMotion 3s infinite alternate ease-in-out;
+        }
+
+        @keyframes scanMotion {
+            0% { top: 10%; opacity: 0.3; }
+            50% { opacity: 1; }
+            100% { top: 90%; opacity: 0.3; }
+        }
+
+        .face-target-box {
+            width: 190px;
+            height: 220px;
+            border: 2px dashed rgba(56, 189, 248, 0.4);
+            border-radius: 16px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: radial-gradient(circle, rgba(56, 189, 248, 0.05) 0%, transparent 70%);
+        }
+
+        .corner-bracket {
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            border-color: #38bdf8;
+            border-style: solid;
+        }
+        .corner-tl { top: -2px; left: -2px; border-width: 3px 0 0 3px; }
+        .corner-tr { top: -2px; right: -2px; border-width: 3px 3px 0 0; }
+        .corner-bl { bottom: -2px; left: -2px; border-width: 0 0 3px 3px; }
+        .corner-br { bottom: -2px; right: -2px; border-width: 0 3px 3px 0; }
+
+        .scan-badge-floating {
+            position: absolute;
+            background: rgba(15, 23, 42, 0.9);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            backdrop-filter: blur(10px);
+            padding: 8px 14px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            color: #e2e8f0;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+        }
+
+        /* Glass Cards */
+        .glass-card {
+            background: var(--card-glass);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            backdrop-filter: blur(16px);
+            transition: all 0.3s ease;
+        }
+
+        .glass-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(99, 102, 241, 0.4);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+        }
+
+        .feature-icon-wrapper {
+            width: 54px;
+            height: 54px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            margin-bottom: 20px;
+        }
+
+        /* Stats Ribbon */
+        .stats-ribbon {
+            background: rgba(15, 23, 42, 0.6);
+            border-top: 1px solid var(--card-border);
+            border-bottom: 1px solid var(--card-border);
+            padding: 35px 0;
+        }
+
+        /* How it works steps */
+        .step-number {
+            width: 44px;
+            height: 44px;
+            background: var(--primary-gradient);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 1.1rem;
+            margin-bottom: 16px;
+        }
+
+        /* Footer */
+        .landing-footer {
+            border-top: 1px solid var(--card-border);
+            background: #060911;
+            padding: 40px 0 25px 0;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="ambient-glow-1"></div>
+    <div class="ambient-glow-2"></div>
+
+    <!-- NAVBAR -->
+    <nav class="navbar navbar-expand-lg landing-navbar sticky-top py-3">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center gap-2 fw-bold text-white text-decoration-none" href="{{ url_for('index') }}">
+                <div class="brand-logo-icon">
+                    <i class="fa-solid fa-camera-viewfinder"></i>
+                </div>
+                <span class="fs-4">Vision<span class="text-primary">Attend</span></span>
+            </a>
+
+            <button class="navbar-toggler border-0 text-white" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
+                <i class="fa-solid fa-bars fs-4"></i>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navMenu">
+                <ul class="navbar-nav mx-auto mb-2 mb-lg-0 gap-3 fw-medium">
+                    <li class="nav-item"><a class="nav-link text-white-50 hover-text-white" href="#features">Features</a></li>
+                    <li class="nav-item"><a class="nav-link text-white-50 hover-text-white" href="#modes">Scanning Modes</a></li>
+                    <li class="nav-item"><a class="nav-link text-white-50 hover-text-white" href="#how-it-works">How It Works</a></li>
+                    <li class="nav-item"><a class="nav-link text-white-50 hover-text-white" href="#faq">FAQ</a></li>
+                    <li class="nav-item"><a class="nav-link text-white-50 hover-text-white" href="{{ url_for('about_page') }}">About</a></li>
+                </ul>
+
+                <div class="d-flex align-items-center gap-2">
+                    <a href="{{ url_for('my_attendance') }}" class="btn btn-glass btn-sm rounded-pill px-3 py-2 text-info">
+                        <i class="fa-solid fa-chart-pie me-1"></i> Check Attendance
+                    </a>
+                    <a href="{{ url_for('register_student') }}" class="btn btn-glass btn-sm rounded-pill px-3 py-2">
+                        <i class="fa-solid fa-camera text-success me-1"></i> Student Register
+                    </a>
+                    
+                    {% if session.admin_logged_in %}
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-gradient-primary btn-sm rounded-pill px-4 py-2">
+                        <i class="fa-solid fa-chart-pie me-1"></i> Dashboard
+                    </a>
+                    {% else %}
+                    <a href="{{ url_for('login') }}" class="btn btn-gradient-primary btn-sm rounded-pill px-4 py-2">
+                        <i class="fa-solid fa-shield-halved me-1"></i> Sign In / Up
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- HERO SECTION -->
+    <header class="py-5 position-relative">
+        <div class="container py-lg-4">
+            <div class="row align-items-center g-5">
+                <div class="col-lg-7">
+                    <div class="hero-pill mb-3">
+                        <i class="fa-solid fa-bolt text-warning"></i>
+                        <span>AI Deep Learning Biometrics v2.0</span>
+                    </div>
+
+                    <h1 class="display-4 fw-extrabold text-gradient mb-3 lh-sm">
+                        Zero Roll Calls.<br>100% Automated Face Attendance.
+                    </h1>
+
+                    <p class="lead text-white-50 mb-4" style="max-width: 580px;">
+                        Replace manual registers with deep neural 128-d facial recognition. Features real-time kiosk scanning, instant voice confirmation, and mobile anti-proxy selfie check-ins.
+                    </p>
+
+                    <!-- Active Session Banner if instructor started a class -->
+                    {% if active_session %}
+                    <div class="p-3 mb-4 rounded-4 border border-success bg-success bg-opacity-10 d-inline-flex align-items-center gap-3">
+                        <span class="spinner-grow spinner-grow-sm text-success" role="status"></span>
+                        <div>
+                            <span class="fw-bold text-white">Live Attendance Session Active:</span>
+                            <span class="badge bg-success ms-1">{{ active_session.session_code }}</span>
+                        </div>
+                        <a href="/checkin?code={{ active_session.session_code }}" class="btn btn-sm btn-success rounded-pill px-3 py-1 fw-bold">
+                            Check In Now ➔
+                        </a>
+                    </div>
+                    {% endif %}
+
+                    <div class="d-flex flex-wrap gap-3">
+                        {% if session.admin_logged_in %}
+                        <a href="{{ url_for('mark_attendance_page') }}" class="btn-gradient-primary">
+                            <i class="fa-solid fa-video"></i> Launch Live Scanner
+                        </a>
+                        <a href="{{ url_for('dashboard') }}" class="btn-glass">
+                            <i class="fa-solid fa-chart-pie text-primary"></i> View Dashboard
+                        </a>
+                        {% else %}
+                        <a href="{{ url_for('login') }}" class="btn-gradient-primary">
+                            <i class="fa-solid fa-shield-halved"></i> Faculty / Admin Portal
+                        </a>
+                        <a href="{{ url_for('register_student') }}" class="btn-glass">
+                            <i class="fa-solid fa-camera text-success"></i> Enroll Student Face
+                        </a>
+                        {% endif %}
+                    </div>
+
+                    <div class="d-flex align-items-center gap-4 mt-4 pt-3 text-white-50 small">
+                        <div><i class="fa-solid fa-check-circle text-primary me-1"></i> dlib 128-D ResNet</div>
+                        <div><i class="fa-solid fa-check-circle text-success me-1"></i> Anti-Proxy Defense</div>
+                        <div><i class="fa-solid fa-check-circle text-info me-1"></i> Excel & CSV Export</div>
+                    </div>
+                </div>
+
+                <!-- Hero Visual Mockup -->
+                <div class="col-lg-5">
+                    <div class="scanner-mockup">
+                        <div class="p-3 bg-dark bg-opacity-75 d-flex justify-content-between align-items-center border-bottom border-secondary border-opacity-25">
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="badge bg-danger animate-pulse"><i class="fa-solid fa-circle me-1"></i> LIVE STREAM</span>
+                                <span class="small text-white-50">Kiosk Node #01</span>
+                            </div>
+                            <span class="text-success small fw-semibold"><i class="fa-solid fa-wifi me-1"></i> 60 FPS</span>
+                        </div>
+
+                        <div class="scanner-screen">
+                            <div class="laser-line"></div>
+                            
+                            <div class="face-target-box">
+                                <div class="corner-bracket corner-tl"></div>
+                                <div class="corner-bracket corner-tr"></div>
+                                <div class="corner-bracket corner-bl"></div>
+                                <div class="corner-bracket corner-br"></div>
+
+                                <div class="rounded-circle bg-secondary bg-opacity-25 p-4 mb-2 text-primary">
+                                    <i class="fa-solid fa-user-astronaut fs-1"></i>
+                                </div>
+                                <div class="badge bg-success bg-opacity-90 px-3 py-1">
+                                    <i class="fa-solid fa-shield-check me-1"></i> 99.4% Match
+                                </div>
+                            </div>
+
+                            <!-- Floating Badges -->
+                            <div class="scan-badge-floating" style="top: 25px; left: 20px;">
+                                <div class="d-flex align-items-center gap-2">
+                                    <i class="fa-solid fa-id-badge text-warning"></i>
+                                    <div>
+                                        <div class="fw-bold" style="font-size: 0.78rem;">Rahul Sharma</div>
+                                        <div class="text-white-50" style="font-size: 0.7rem;">Roll: CS-2401</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="scan-badge-floating" style="bottom: 25px; right: 20px;">
+                                <div class="d-flex align-items-center gap-2">
+                                    <i class="fa-solid fa-volume-high text-success"></i>
+                                    <span class="fw-semibold text-success" style="font-size: 0.75rem;">Voice Confirmed!</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="p-3 bg-dark bg-opacity-50 text-center text-white-50 small border-top border-secondary border-opacity-25">
+                            <i class="fa-solid fa-microchip text-primary me-1"></i> Powered by dlib Deep Facial Embeddings
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- STATS RIBBON -->
+    <section class="stats-ribbon">
+        <div class="container">
+            <div class="row g-4 text-center">
+                <div class="col-6 col-md-3">
+                    <h2 class="fw-bold text-primary mb-1">128-D</h2>
+                    <p class="text-white-50 small mb-0">Deep Biometric Embedding</p>
+                </div>
+                <div class="col-6 col-md-3">
+                    <h2 class="fw-bold text-success mb-1">&lt; 0.2s</h2>
+                    <p class="text-white-50 small mb-0">Real-time Recognition</p>
+                </div>
+                <div class="col-6 col-md-3">
+                    <h2 class="fw-bold text-info mb-1">99.4%</h2>
+                    <p class="text-white-50 small mb-0">Model Accuracy</p>
+                </div>
+                <div class="col-6 col-md-3">
+                    <h2 class="fw-bold text-warning mb-1">100%</h2>
+                    <p class="text-white-50 small mb-0">Paperless & Proxy-Free</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- DUAL MODES -->
+    <section id="modes" class="py-5">
+        <div class="container py-lg-4">
+            <div class="text-center mb-5">
+                <h6 class="text-primary fw-bold text-uppercase tracking-wider">Operational Flexibility</h6>
+                <h2 class="fw-bold text-white">Choose Your Ideal Attendance Workflow</h2>
+                <p class="text-white-50 mx-auto" style="max-width: 620px;">Deploy centralized camera scanners in class or let students verify via their smartphone.</p>
+            </div>
+
+            <div class="row g-4 justify-content-center">
+                <div class="col-md-6 col-lg-5">
+                    <div class="glass-card p-4 p-lg-5 h-100">
+                        <div class="feature-icon-wrapper bg-primary bg-opacity-10 text-primary">
+                            <i class="fa-solid fa-video"></i>
+                        </div>
+                        <h4 class="fw-bold text-white mb-2">Centralized Kiosk Mode</h4>
+                        <p class="text-white-50 small mb-4">Instructor or CR runs a continuous video stream. Students walk past the camera; attendance is marked with HUD boxes and audible voice feedback.</p>
+                        <ul class="list-unstyled text-white-50 small mb-4 d-flex flex-column gap-2">
+                            <li><i class="fa-solid fa-check text-primary me-2"></i> Real-time OpenCV/dlib live stream</li>
+                            <li><i class="fa-solid fa-check text-primary me-2"></i> Synthesized browser speech feedback</li>
+                            <li><i class="fa-solid fa-check text-primary me-2"></i> 5-second automatic anti-debounce</li>
+                        </ul>
+                        <a href="{{ url_for('login') }}" class="btn btn-outline-primary rounded-pill w-100 py-2 fw-semibold">
+                            Open Kiosk Scanner ➔
+                        </a>
+                    </div>
+                </div>
+
+                <div class="col-md-6 col-lg-5">
+                    <div class="glass-card p-4 p-lg-5 h-100 border-info border-opacity-30">
+                        <div class="feature-icon-wrapper bg-info bg-opacity-10 text-info">
+                            <i class="fa-solid fa-mobile-screen-button"></i>
+                        </div>
+                        <h4 class="fw-bold text-white mb-2">Mobile Self-Checkin (QR Link)</h4>
+                        <p class="text-white-50 small mb-4">Instructor generates a daily 6-character session link. Students open on their phones, type Roll Number, and take a selfie for instant 1:1 biometric verification.</p>
+                        <ul class="list-unstyled text-white-50 small mb-4 d-flex flex-column gap-2">
+                            <li><i class="fa-solid fa-check text-info me-2"></i> Daily dynamic code protection</li>
+                            <li><i class="fa-solid fa-check text-info me-2"></i> Instant anti-proxy face match rejection</li>
+                            <li><i class="fa-solid fa-check text-info me-2"></i> Zero hardware installation needed</li>
+                        </ul>
+                        <a href="{{ url_for('register_student') }}" class="btn btn-outline-info rounded-pill w-100 py-2 fw-semibold">
+                            Enroll For Mobile Access ➔
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CORE FEATURES GRID -->
+    <section id="features" class="py-5 bg-dark bg-opacity-40">
+        <div class="container py-lg-4">
+            <div class="text-center mb-5">
+                <h6 class="text-primary fw-bold text-uppercase tracking-wider">Enterprise Architecture</h6>
+                <h2 class="fw-bold text-white">Engineered For Reliability & Speed</h2>
+                <p class="text-white-50 mx-auto" style="max-width: 620px;">Built on battle-tested Computer Vision models and robust relational storage.</p>
+            </div>
+
+            <div class="row g-4">
+                <div class="col-md-6 col-lg-4">
+                    <div class="glass-card p-4 h-100">
+                        <div class="feature-icon-wrapper bg-primary bg-opacity-10 text-primary">
+                            <i class="fa-solid fa-brain"></i>
+                        </div>
+                        <h5 class="fw-bold text-white mb-2">128-D ResNet Embeddings</h5>
+                        <p class="text-white-50 small mb-0">High-dimensional face encodings generate unique biometric signatures resistant to glasses, hair changes, and mild rotations.</p>
+                    </div>
+                </div>
+
+                <div class="col-md-6 col-lg-4">
+                    <div class="glass-card p-4 h-100">
+                        <div class="feature-icon-wrapper bg-success bg-opacity-10 text-success">
+                            <i class="fa-solid fa-volume-high"></i>
+                        </div>
+                        <h5 class="fw-bold text-white mb-2">Smart Voice Feedback</h5>
+                        <p class="text-white-50 small mb-0">Browser SpeechSynthesis & Web Audio chime announces the student's name on successful attendance without instructor intervention.</p>
+                    </div>
+                </div>
+
+                <div class="col-md-6 col-lg-4">
+                    <div class="glass-card p-4 h-100">
+                        <div class="feature-icon-wrapper bg-warning bg-opacity-10 text-warning">
+                            <i class="fa-solid fa-ban"></i>
+                        </div>
+                        <h5 class="fw-bold text-white mb-2">Anti-Proxy & Anti-Duplicate</h5>
+                        <p class="text-white-50 small mb-0">SQLite UNIQUE constraints strictly restrict students to 1 check-in per calendar date, preventing multiple entries.</p>
+                    </div>
+                </div>
+
+                <div class="col-md-6 col-lg-4">
+                    <div class="glass-card p-4 h-100">
+                        <div class="feature-icon-wrapper bg-info bg-opacity-10 text-info">
+                            <i class="fa-solid fa-chart-line"></i>
+                        </div>
+                        <h5 class="fw-bold text-white mb-2">Real-Time Analytics</h5>
+                        <p class="text-white-50 small mb-0">Interactive 7-day attendance trends, present vs absent turnout percentage, and branch distributions powered by Chart.js.</p>
+                    </div>
+                </div>
+
+                <div class="col-md-6 col-lg-4">
+                    <div class="glass-card p-4 h-100">
+                        <div class="feature-icon-wrapper bg-danger bg-opacity-10 text-danger">
+                            <i class="fa-solid fa-user-shield"></i>
+                        </div>
+                        <h5 class="fw-bold text-white mb-2">Multi-Tier RBAC</h5>
+                        <p class="text-white-50 small mb-0">Superadmin, Faculty, and Class Representative (CR) roles with granular permission levels ensuring data protection.</p>
+                    </div>
+                </div>
+
+                <div class="col-md-6 col-lg-4">
+                    <div class="glass-card p-4 h-100">
+                        <div class="feature-icon-wrapper bg-light bg-opacity-10 text-white">
+                            <i class="fa-solid fa-file-excel"></i>
+                        </div>
+                        <h5 class="fw-bold text-white mb-2">Instant Excel & CSV Export</h5>
+                        <p class="text-white-50 small mb-0">Filter by specific dates and engineering branches to export formatted `.xlsx` and `.csv` audit spreadsheets in one click.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- HOW IT WORKS -->
+    <section id="how-it-works" class="py-5">
+        <div class="container py-lg-4">
+            <div class="text-center mb-5">
+                <h6 class="text-primary fw-bold text-uppercase tracking-wider">Simple 3-Step Flow</h6>
+                <h2 class="fw-bold text-white">How VisionAttend Operates</h2>
+            </div>
+
+            <div class="row g-4 text-center">
+                <div class="col-md-4">
+                    <div class="glass-card p-4 h-100">
+                        <div class="step-number mx-auto">1</div>
+                        <h5 class="fw-bold text-white mb-2">One-Time Enrollment</h5>
+                        <p class="text-white-50 small mb-0">Student captures a selfie via webcam or uploads a picture. The AI validates face presence and extracts 128 mathematical landmarks.</p>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="glass-card p-4 h-100">
+                        <div class="step-number mx-auto">2</div>
+                        <h5 class="fw-bold text-white mb-2">Facial Recognition</h5>
+                        <p class="text-white-50 small mb-0">Live video feed matches faces in real-time with tolerance threshold comparison. Name and roll number are identified instantly.</p>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="glass-card p-4 h-100">
+                        <div class="step-number mx-auto">3</div>
+                        <h5 class="fw-bold text-white mb-2">Instant Logging & Voice</h5>
+                        <p class="text-white-50 small mb-0">Attendance record is logged with timestamp, match confidence score, and verified status. Name is spoken aloud automatically.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ SECTION -->
+    <section id="faq" class="py-5 bg-dark bg-opacity-30">
+        <div class="container py-lg-4" style="max-width: 800px;">
+            <div class="text-center mb-5">
+                <h6 class="text-primary fw-bold text-uppercase tracking-wider">Got Questions?</h6>
+                <h2 class="fw-bold text-white">Frequently Asked Questions</h2>
+            </div>
+
+            <div class="accordion accordion-flush" id="faqAccordion">
+                <div class="accordion-item bg-transparent border-bottom border-secondary border-opacity-25 py-2">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed bg-transparent text-white fw-bold shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+                            Does it work without expensive CCTV or proprietary hardware?
+                        </button>
+                    </h2>
+                    <div id="faq1" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                        <div class="accordion-body text-white-50 small">
+                            Yes! VisionAttend works with any standard laptop webcam, USB webcam, or student smartphone cameras through WebRTC. No proprietary sensors are needed.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="accordion-item bg-transparent border-bottom border-secondary border-opacity-25 py-2">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed bg-transparent text-white fw-bold shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+                            Can students proxy for their friends?
+                        </button>
+                    </h2>
+                    <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                        <div class="accordion-body text-white-50 small">
+                            No. On the mobile check-in portal, entering a roll number requires capturing a live front-camera selfie. The backend compares the live selfie against the enrolled student's biometric signature; if it fails to match, the proxy attempt is immediately rejected.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="accordion-item bg-transparent border-bottom border-secondary border-opacity-25 py-2">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed bg-transparent text-white fw-bold shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
+                            Can Class Representatives (CRs) delete student data?
+                        </button>
+                    </h2>
+                    <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                        <div class="accordion-body text-white-50 small">
+                            No. Role-based access control restricts CR accounts to scanning and viewing logs. Only the Super Administrator has authorization to delete students or create new sub-admin accounts.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA BANNER -->
+    <section class="py-5 text-center position-relative">
+        <div class="container py-4">
+            <div class="glass-card p-5 mx-auto" style="max-width: 850px; background: linear-gradient(145deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.95) 100%);">
+                <h2 class="fw-bold text-gradient mb-3">Upgrade Your Institution's Attendance Today</h2>
+                <p class="text-white-50 mb-4 mx-auto" style="max-width: 550px;">
+                    Experience seamless, zero-touch facial biometric tracking with instantaneous verification.
+                </p>
+                <div class="d-flex justify-content-center flex-wrap gap-3">
+                    <a href="{{ url_for('login') }}" class="btn-gradient-primary">
+                        <i class="fa-solid fa-right-to-bracket"></i> Sign In to Portal
+                    </a>
+                    <a href="{{ url_for('register_student') }}" class="btn-glass">
+                        <i class="fa-solid fa-user-plus text-success"></i> Enroll Student Face
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="landing-footer">
+        <div class="container">
+            <div class="row g-4 align-items-center justify-content-between">
+                <div class="col-md-6 text-center text-md-start">
+                    <div class="d-flex align-items-center justify-content-center justify-content-md-start gap-2 mb-2">
+                        <div class="brand-logo-icon" style="width: 32px; height: 32px; font-size: 0.85rem;">
+                            <i class="fa-solid fa-camera-viewfinder"></i>
+                        </div>
+                        <span class="fw-bold text-white fs-5">VisionAttend AI</span>
+                    </div>
+                    <p class="text-white-50 small mb-2">Autonomous Face Recognition & Class Attendance System.</p>
+                    <div class="d-flex flex-wrap gap-3 justify-content-center justify-content-md-start small pt-1">
+                        <a href="{{ url_for('about_page') }}" class="text-white-50 text-decoration-none hover-white">About Us</a>
+                        <span class="text-secondary opacity-50">&bull;</span>
+                        <a href="{{ url_for('privacy_page') }}" class="text-white-50 text-decoration-none hover-white">Privacy Policy</a>
+                        <span class="text-secondary opacity-50">&bull;</span>
+                        <a href="{{ url_for('terms_page') }}" class="text-white-50 text-decoration-none hover-white">Terms & Conditions</a>
+                        <span class="text-secondary opacity-50">&bull;</span>
+                        <a href="{{ url_for('my_attendance') }}" class="text-info text-decoration-none hover-white">Student Portal</a>
+                    </div>
+                </div>
+                <div class="col-md-6 text-center text-md-end">
+                    <div class="d-inline-flex align-items-center gap-2 bg-dark px-3 py-1 rounded-pill small border border-secondary border-opacity-25 mb-2">
+                        <span class="spinner-grow spinner-grow-sm text-success" style="width: 8px; height: 8px;" role="status"></span>
+                        <span class="text-white-50" style="font-size: 0.8rem;">All AI Verification Engines Operational</span>
+                    </div>
+                    <div class="text-white-50 small">
+                        &copy; 2026 VisionAttend. Built with Python, Flask, OpenCV & dlib.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

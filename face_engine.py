@@ -11,18 +11,25 @@ try:
     import face_recognition
     USE_DLIB = True
     print("[FACE ENGINE] Using dlib / face_recognition backend.")
-except ImportError:
+except Exception as e:
     USE_DLIB = False
-    print("[FACE ENGINE] face_recognition not found. Falling back to Pure OpenCV Haar Cascade & Feature Matching.")
+    print(f"[FACE ENGINE] face_recognition not active ({e}). Falling back to Pure OpenCV Haar Cascade & Feature Matching.")
 
 # 2. Robust Haar Cascade Loader (Auto-downloads if missing in cv2.data)
 def load_haar_cascade():
+    if not hasattr(cv2, 'CascadeClassifier'):
+        print("[FACE ENGINE] Warning: cv2 has no CascadeClassifier (headless/minimal build).")
+        return None
+
     # Try cv2 built-in data path
     built_in = getattr(cv2.data, 'haarcascades', '') + 'haarcascade_frontalface_default.xml'
     if os.path.exists(built_in):
-        cascade = cv2.CascadeClassifier(built_in)
-        if not cascade.empty():
-            return cascade
+        try:
+            cascade = cv2.CascadeClassifier(built_in)
+            if not cascade.empty():
+                return cascade
+        except Exception:
+            pass
 
     # Try local project directory
     local_xml = os.path.join(os.path.dirname(__file__), 'haarcascade_frontalface_default.xml')
@@ -36,11 +43,14 @@ def load_haar_cascade():
             print(f"[FACE ENGINE] Error downloading XML: {e}")
 
     if os.path.exists(local_xml):
-        cascade = cv2.CascadeClassifier(local_xml)
-        if not cascade.empty():
-            return cascade
+        try:
+            cascade = cv2.CascadeClassifier(local_xml)
+            if not cascade.empty():
+                return cascade
+        except Exception:
+            pass
 
-    return cv2.CascadeClassifier()
+    return None
 
 face_cascade = load_haar_cascade()
 
@@ -87,6 +97,8 @@ class FaceRecognitionEngine:
             return encodings[0], None
         else:
             # OpenCV Fallback
+            if face_cascade is None:
+                return None, "Face detector not available. Please run with project virtual environment (venv)."
             img = cv2.imread(image_path)
             if img is None:
                 return None, "Could not load image."
@@ -116,12 +128,13 @@ class FaceRecognitionEngine:
                 top, right, bottom, left = top * 4, right * 4, bottom * 4, left * 4
                 self._match_and_draw(frame, (left, top, right - left, bottom - top), face_encoding, detection_results, is_dlib=True)
         else:
-            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-            faces = face_cascade.detectMultiScale(gray, scaleFactor=1.2, minNeighbors=5, minSize=(70, 70))
-            
-            for (x, y, fw, fh) in faces:
-                feature_vec = self._extract_opencv_feature(frame, (x, y, fw, fh))
-                self._match_and_draw(frame, (x, y, fw, fh), feature_vec, detection_results, is_dlib=False)
+            if face_cascade is not None:
+                gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+                faces = face_cascade.detectMultiScale(gray, scaleFactor=1.2, minNeighbors=5, minSize=(70, 70))
+                
+                for (x, y, fw, fh) in faces:
+                    feature_vec = self._extract_opencv_feature(frame, (x, y, fw, fh))
+                    self._match_and_draw(frame, (x, y, fw, fh), feature_vec, detection_results, is_dlib=False)
 
         return frame, detection_results
 
@@ -194,13 +207,17 @@ def generate_video_stream():
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
 
-    while True:
-        success, frame = cap.read()
-        if not success:
-            break
+    try:
+        while True:
+            success, frame = cap.read()
+            if not success:
+                break
 
-        processed_frame, _ = face_engine.process_live_frame(frame)
-        ret, buffer = cv2.imencode('.jpg', processed_frame)
-        yield (b'--frame\r\n'
-               b'Content-Type: image/jpeg\r\n\r\n' + buffer.tobytes() + b'\r\n')
-    cap.release()
+            processed_frame, _ = face_engine.process_live_frame(frame)
+            ret, buffer = cv2.imencode('.jpg', processed_frame)
+            if not ret:
+                continue
+            yield (b'--frame\r\n'
+                   b'Content-Type: image/jpeg\r\n\r\n' + buffer.tobytes() + b'\r\n')
+    finally:
+        cap.release()

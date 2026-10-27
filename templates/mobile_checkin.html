@@ -3,41 +3,158 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daily Mobile Attendance</title>
+    <title>Daily Mobile Check-In - VisionAttend AI</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+
     <style>
-        body { background: #f0f2f5; font-family: sans-serif; }
-        .camera-card { max-width: 480px; margin: 20px auto; border-radius: 20px; }
-        video, canvas { width: 100%; border-radius: 12px; transform: scaleX(-1); }
+        :root {
+            --primary-gradient: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+            --dark-bg: #090d16;
+            --glass-card: rgba(18, 26, 43, 0.75);
+            --card-border: rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            background-color: var(--dark-bg);
+            color: #f1f5f9;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+
+        .mobile-card {
+            background: #ffffff;
+            border-radius: 26px;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            max-width: 460px;
+            width: 100%;
+            overflow: hidden;
+            color: #1e293b;
+        }
+
+        .camera-viewport {
+            width: 100%;
+            min-height: 290px;
+            background: #0b1120;
+            border-radius: 18px;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px dashed rgba(56, 189, 248, 0.35);
+        }
+
+        video, canvas {
+            width: 100%;
+            border-radius: 16px;
+            transform: scaleX(-1);
+            object-fit: cover;
+        }
+
+        .corner-point {
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            border-color: #38bdf8;
+            border-style: solid;
+            z-index: 5;
+        }
+        .cp-tl { top: 12px; left: 12px; border-width: 3px 0 0 3px; }
+        .cp-tr { top: 12px; right: 12px; border-width: 3px 3px 0 0; }
+        .cp-bl { bottom: 12px; left: 12px; border-width: 0 0 3px 3px; }
+        .cp-br { bottom: 12px; right: 12px; border-width: 0 3px 3px 0; }
+
+        .laser-line {
+            position: absolute;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #38bdf8, transparent);
+            box-shadow: 0 0 10px #38bdf8;
+            top: 0;
+            z-index: 4;
+            animation: laserMove 2.5s infinite alternate ease-in-out;
+        }
+
+        @keyframes laserMove {
+            0% { top: 10%; opacity: 0.3; }
+            50% { opacity: 1; }
+            100% { top: 90%; opacity: 0.3; }
+        }
+
+        .btn-scan-submit {
+            background: var(--primary-gradient);
+            border: none;
+            color: white;
+            font-weight: 700;
+            font-size: 1.05rem;
+            padding: 14px 20px;
+            border-radius: 14px;
+            box-shadow: 0 8px 24px rgba(37, 99, 235, 0.35);
+            transition: all 0.25s ease;
+            width: 100%;
+        }
+
+        .btn-scan-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 28px rgba(37, 99, 235, 0.5);
+            color: white;
+        }
     </style>
 </head>
 <body>
-    <div class="container px-3">
-        <div class="card camera-card border-0 shadow-lg p-4">
-            <div class="text-center mb-3">
-                <div class="bg-primary text-white rounded-circle d-inline-flex p-3 mb-2">
-                    <i class="fa-solid fa-camera-rotate fs-2"></i>
-                </div>
-                <h4 class="fw-bold mb-0">Daily Class Attendance</h4>
-                <p class="text-muted small">Look straight into the front camera to mark attendance</p>
+
+    <div class="mobile-card p-4">
+        <div class="text-center mb-3">
+            <div class="d-inline-flex align-items-center gap-2 bg-primary bg-opacity-10 border border-primary border-opacity-25 px-3 py-1 rounded-pill small mb-2 text-primary fw-semibold">
+                <i class="fa-solid fa-qrcode me-1"></i> Session: <b>{{ session_code }}</b>
             </div>
+            <h4 class="fw-bold mb-1 text-dark">Daily Class Attendance</h4>
+            <p class="text-muted small mb-0">Look straight into the front camera to mark attendance</p>
+        </div>
 
-            <div class="mb-3">
-                <label class="form-label small fw-bold">Enter Your Roll Number</label>
-                <input type="text" id="rollNumber" class="form-control form-control-lg text-uppercase fw-bold" placeholder="e.g. 24030101" required autofocus>
+        <div class="mb-3">
+            <label class="form-label small fw-bold text-secondary">Student Roll Number <span class="text-danger">*</span></label>
+            <div class="input-group">
+                <span class="input-group-text bg-light border-end-0 text-muted"><i class="fa-solid fa-id-card"></i></span>
+                <input type="text" id="rollNumber" class="form-control form-control-lg border-start-0 text-uppercase fw-bold text-primary" placeholder="e.g. 24030101" required autofocus style="border-radius: 0 12px 12px 0;">
             </div>
+        </div>
 
-            <div class="position-relative bg-dark rounded-3 overflow-hidden text-center mb-3" style="min-height: 280px;">
-                <video id="video" autoplay playsinline></video>
-                <canvas id="canvas" class="d-none"></canvas>
+        <!-- Camera Viewport Box -->
+        <div class="camera-viewport mb-3">
+            <div class="laser-line"></div>
+            <div class="corner-point cp-tl"></div>
+            <div class="corner-point cp-tr"></div>
+            <div class="corner-point cp-bl"></div>
+            <div class="corner-point cp-br"></div>
+
+            <video id="video" autoplay playsinline></video>
+            <canvas id="canvas" class="d-none"></canvas>
+
+            <div id="cameraLoading" class="position-absolute text-white-50 text-center">
+                <i class="fa-solid fa-spinner fa-spin fs-2 mb-2"></i>
+                <div class="small">Initializing Camera...</div>
             </div>
+        </div>
 
-            <button type="button" id="btnScan" class="btn btn-primary btn-lg w-100 fw-bold rounded-pill shadow-sm mb-2">
-                <i class="fa-solid fa-face-viewfinder me-1"></i> Scan Face & Mark Attendance
-            </button>
+        <button type="button" id="btnScan" class="btn btn-scan-submit mb-2">
+            <i class="fa-solid fa-face-viewfinder me-2"></i> Scan Face & Mark Attendance
+        </button>
 
-            <div id="resultBox" class="alert d-none mt-3 text-center py-3 fw-bold"></div>
+        <div id="resultBox" class="alert d-none mt-3 text-center py-3 fw-bold rounded-3"></div>
+
+        <div class="text-center mt-3 pt-3 border-top">
+            <a href="{{ url_for('my_attendance') }}" class="small text-decoration-none text-muted fw-semibold">
+                <i class="fa-solid fa-chart-pie me-1"></i> Check My Full Attendance Record
+            </a>
         </div>
     </div>
 
@@ -47,6 +164,7 @@
         const btnScan = document.getElementById('btnScan');
         const rollInput = document.getElementById('rollNumber');
         const resultBox = document.getElementById('resultBox');
+        const cameraLoading = document.getElementById('cameraLoading');
         const sessionCode = "{{ session_code }}";
 
         async function startCamera() {
@@ -55,8 +173,11 @@
                     video: { facingMode: "user", width: { ideal: 640 }, height: { ideal: 480 } }
                 });
                 video.srcObject = stream;
+                video.onloadedmetadata = () => {
+                    if (cameraLoading) cameraLoading.style.display = 'none';
+                };
             } catch (err) {
-                alert("Please allow camera access on your mobile to mark attendance!");
+                alert("Please allow camera access on your device to mark attendance: " + err.message);
             }
         }
         startCamera();
@@ -69,8 +190,13 @@
                 return;
             }
 
+            if (!video.videoWidth || !video.videoHeight) {
+                alert("Camera is still warming up. Please wait 1 second and try again.");
+                return;
+            }
+
             btnScan.disabled = true;
-            btnScan.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-1"></i> Verifying Face...';
+            btnScan.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2"></i> Verifying Biometrics...';
             resultBox.className = 'alert d-none';
 
             canvas.width = video.videoWidth;
@@ -89,20 +215,20 @@
                 resultBox.classList.remove('d-none');
                 if (data.success) {
                     resultBox.className = 'alert alert-success text-center py-3 fw-bold';
-                    resultBox.innerHTML = `<i class="fa-solid fa-circle-check fs-4 d-block mb-1"></i>${data.message}`;
+                    resultBox.innerHTML = `<i class="fa-solid fa-circle-check fs-3 d-block mb-1"></i>${data.message}`;
                     if ('speechSynthesis' in window) {
                         window.speechSynthesis.speak(new SpeechSynthesisUtterance("Attendance Marked!"));
                     }
                 } else {
                     resultBox.className = 'alert alert-danger text-center py-3 fw-bold';
-                    resultBox.innerHTML = `<i class="fa-solid fa-circle-xmark fs-4 d-block mb-1"></i>${data.message}`;
+                    resultBox.innerHTML = `<i class="fa-solid fa-circle-xmark fs-3 d-block mb-1"></i>${data.message}`;
                 }
             } catch (err) {
                 resultBox.className = 'alert alert-danger text-center py-3';
                 resultBox.innerText = "Network Error! Please try again.";
             } finally {
                 btnScan.disabled = false;
-                btnScan.innerHTML = '<i class="fa-solid fa-face-viewfinder me-1"></i> Scan Face & Mark Attendance';
+                btnScan.innerHTML = '<i class="fa-solid fa-face-viewfinder me-2"></i> Scan Face & Mark Attendance';
             }
         });
     </script>

@@ -1,0 +1,137 @@
+body {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    color: #2b3445;
+}
+
+/* --- Auth Page Styles --- */
+.auth-wrapper {
+    min-height: calc(100vh - 80px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px 0;
+}
+
+.auth-card {
+    background: #ffffff;
+    border-radius: 24px;
+    box-shadow: 0 20px 50px rgba(15, 23, 42, 0.08), 0 4px 12px rgba(15, 23, 42, 0.04);
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.auth-hero-banner {
+    background: linear-gradient(145deg, #1e293b 0%, #0f172a 50%, #1e1b4b 100%);
+    position: relative;
+    overflow: hidden;
+}
+
+.auth-hero-banner::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, transparent 60%);
+    pointer-events: none;
+}
+
+.auth-nav-container {
+    background: #f1f5f9;
+    border-radius: 14px;
+    padding: 5px;
+    display: flex;
+    gap: 4px;
+}
+
+.auth-nav-btn {
+    flex: 1;
+    border: none;
+    background: transparent;
+    padding: 10px 16px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 0.92rem;
+    color: #64748b;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+}
+
+.auth-nav-btn.active {
+    background: #ffffff;
+    color: #0d6efd;
+    box-shadow: 0 4px 12px rgba(13, 110, 253, 0.12);
+}
+
+.form-control-custom {
+    border-radius: 12px;
+    padding: 11px 16px;
+    border: 1.5px solid #e2e8f0;
+    transition: all 0.2s ease;
+}
+
+.form-control-custom:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.12);
+}
+
+.btn-auth-primary {
+    background: linear-gradient(135deg, #0d6efd 0%, #2563eb 100%);
+    border: none;
+    color: white;
+    font-weight: 600;
+    padding: 12px 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.25);
+    transition: all 0.25s ease;
+}
+
+.btn-auth-primary:hover {
+    background: linear-gradient(135deg, #0b5ed7 0%, #1d4ed8 100%);
+    transform: translateY(-1.5px);
+    box-shadow: 0 6px 20px rgba(37, 99, 235, 0.35);
+    color: white;
+}
+
+.student-card-cta {
+    background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+    border: 1.5px dashed #86efac;
+    border-radius: 16px;
+    transition: all 0.25s ease;
+}
+
+.student-card-cta:hover {
+    background: #dcfce7;
+    border-color: #4ade80;
+    transform: translateY(-2px);
+}
+
+/* --- Stats & Dashboard --- */
+.stat-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.08) !important;
+}
+
+.stat-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 52px;
+    height: 52px;
+}
+
+.animate-pulse {
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.4; }
+    100% { opacity: 1; }
+}

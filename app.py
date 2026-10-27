@@ -3,6 +3,7 @@ import io
 import csv
 import json
 import base64
+import uuid
 from datetime import datetime
 from functools import wraps
 from flask import (
@@ -18,8 +19,10 @@ from config import Config
 from database import (
     init_db, get_db_connection, save_student,
     get_all_crs, add_new_cr, delete_cr_by_id,
-    generate_new_daily_session, get_current_active_session, close_active_session
+    generate_new_daily_session, get_current_active_session, close_active_session,
+    play_hardware_beep, register_user_account
 )
+from cloud_storage import upload_student_photo, delete_student_photo, get_storage_info
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -53,12 +56,12 @@ def superadmin_required(f):
 
 @app.route("/")
 def index():
-    if "admin_logged_in" in session:
-        return redirect(url_for("dashboard"))
-    return redirect(url_for("login"))
+    active_session = get_current_active_session()
+    return render_template("landing.html", active_session=active_session)
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
+    active_tab = request.args.get("tab", "signin")
     if request.method == "POST":
         username = request.form.get("username", "").strip()
         password = request.form.get("password", "").strip()
@@ -77,8 +80,93 @@ def login():
             return redirect(url_for("dashboard"))
         else:
             flash("Invalid username or password.", "danger")
+            active_tab = "signin"
 
-    return render_template("login.html")
+    firebase_config = {
+        "apiKey": getattr(Config, "FIREBASE_API_KEY", ""),
+        "projectId": getattr(Config, "FIREBASE_PROJECT_ID", ""),
+        "storageBucket": getattr(Config, "FIREBASE_STORAGE_BUCKET", ""),
+        "authDomain": f"{getattr(Config, 'FIREBASE_PROJECT_ID', 'smart-face-attendance0')}.firebaseapp.com"
+    }
+    return render_template("login.html", active_tab=active_tab, firebase_config=firebase_config)
+
+@app.route("/signup", methods=["GET", "POST"])
+def signup():
+    if request.method == "POST":
+        username = request.form.get("username", "").strip()
+        password = request.form.get("password", "").strip()
+        confirm_password = request.form.get("confirm_password", "").strip()
+        role = request.form.get("role", "faculty").strip().lower()
+
+        if not username or not password:
+            flash("Username and password are required.", "danger")
+            return redirect(url_for("login", tab="signup"))
+
+        if len(password) < 6:
+            flash("Password must be at least 6 characters long.", "warning")
+            return redirect(url_for("login", tab="signup"))
+
+        if password != confirm_password:
+            flash("Passwords do not match. Please re-enter.", "danger")
+            return redirect(url_for("login", tab="signup"))
+
+        if role not in ["faculty", "admin", "cr"]:
+            role = "faculty"
+
+        success, msg = register_user_account(username, password, role)
+        if success:
+            flash(f"🎉 {msg} Please sign in with your credentials.", "success")
+            return redirect(url_for("login", tab="signin"))
+        else:
+            flash(msg, "danger")
+            return redirect(url_for("login", tab="signup"))
+
+    return redirect(url_for("login", tab="signup"))
+
+# --- Google Sign In API ---
+@app.route("/api/auth/google", methods=["POST"])
+def api_google_auth():
+    data = request.get_json() or {}
+    email = data.get("email", "").strip()
+    name = data.get("name", "").strip()
+
+    if not email:
+        return jsonify({"success": False, "message": "Email is required for Google Sign-In."}), 400
+
+    from database import get_or_create_google_user
+    user = get_or_create_google_user(email, name)
+    session.permanent = True
+    session["admin_logged_in"] = True
+    session["admin_username"] = user["username"]
+    session["admin_role"] = user.get("role", "faculty")
+    session["admin_email"] = user.get("email", email)
+
+    flash(f"🎉 Successfully signed in with Google as {user['username']}!", "success")
+    return jsonify({"success": True, "redirect": url_for("dashboard")})
+
+# --- Forgot & Reset Password ---
+@app.route("/forgot-password", methods=["POST"])
+def forgot_password():
+    username_or_email = request.form.get("username_or_email", "").strip()
+    new_password = request.form.get("new_password", "").strip()
+    confirm_password = request.form.get("confirm_password", "").strip()
+
+    if not username_or_email or not new_password:
+        flash("Username/Email and new password are required.", "danger")
+        return redirect(url_for("login"))
+
+    if len(new_password) < 6:
+        flash("New password must be at least 6 characters long.", "warning")
+        return redirect(url_for("login"))
+
+    if new_password != confirm_password:
+        flash("Passwords do not match.", "danger")
+        return redirect(url_for("login"))
+
+    from database import reset_user_password
+    success, msg = reset_user_password(username_or_email, new_password)
+    flash(msg, "success" if success else "danger")
+    return redirect(url_for("login"))
 
 @app.route("/logout")
 def logout():
@@ -125,7 +213,9 @@ def dashboard():
         dept_counts=[row["count"] for row in dept_distribution],
         trend_dates=[row["date"] for row in reversed(trend_data)],
         trend_counts=[row["count"] for row in reversed(trend_data)],
-        active_session=active_session
+        active_session=active_session,
+        storage_info=get_storage_info(),
+        turso_connected=bool(Config.TURSO_DATABASE_URL and Config.TURSO_AUTH_TOKEN)
     )
 
 # --- Dynamic Daily Link Controller ---
@@ -159,25 +249,34 @@ def register_student():
             flash("Roll number, name, and department are mandatory.", "danger")
             return redirect(url_for("register_student"))
 
+        # Pre-check database to prevent overwriting/deleting existing student's photo
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT id FROM students WHERE roll_number = ?", (roll_number,))
+        existing_student = cursor.fetchone()
+        conn.close()
+        if existing_student:
+            flash(f"Roll Number '{roll_number}' is already registered in the system.", "danger")
+            return redirect(url_for("register_student"))
+
         filename = f"{secure_filename(roll_number)}.jpg"
         save_path = os.path.join(Config.UPLOAD_FOLDER, filename)
 
         if webcam_image_data and "base64," in webcam_image_data:
             header, encoded = webcam_image_data.split("base64,", 1)
             image_bytes = base64.b64decode(encoded)
-            with open(save_path, "wb") as f:
-                f.write(image_bytes)
         elif "photo" in request.files and request.files["photo"].filename != "":
-            file = request.files["photo"]
-            file.save(save_path)
+            image_bytes = request.files["photo"].read()
         else:
             flash("Please capture a photo via camera or upload a picture.", "warning")
             return redirect(url_for("register_student"))
 
+        # Save locally and upload to Firebase Storage if configured
+        photo_ref, is_cloud = upload_student_photo(image_bytes, filename)
+
         encoding, error = face_engine.extract_encoding_from_image(save_path)
         if error:
-            if os.path.exists(save_path):
-                os.remove(save_path)
+            delete_student_photo(filename)
             flash(error, "danger")
             return redirect(url_for("register_student"))
 
@@ -185,16 +284,65 @@ def register_student():
 
         if success:
             face_engine.reload_known_faces()
-            flash(f"🎉 Success! {name} ({roll_number}), your face enrollment is complete. You can close this tab.", "success")
+            cloud_badge = " [Synced to Firebase Storage]" if is_cloud else ""
+            flash(f"🎉 Success! {name} ({roll_number}), your face enrollment is complete.{cloud_badge}", "success")
             if "admin_logged_in" in session:
                 return redirect(url_for("students_list"))
             return redirect(url_for("register_student"))
         else:
-            if os.path.exists(save_path):
-                os.remove(save_path)
+            delete_student_photo(filename)
             flash(msg, "danger")
 
     return render_template("register.html")
+
+# --- Student Personal Attendance Portal ---
+@app.route("/my-attendance", methods=["GET", "POST"])
+def my_attendance():
+    roll = request.args.get("roll", "").strip().upper()
+    if request.method == "POST":
+        roll = request.form.get("roll_number", "").strip().upper()
+
+    student_data = None
+    attendance_records = []
+    stats = {}
+
+    if roll:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM students WHERE roll_number = ?", (roll,))
+        student_data = cursor.fetchone()
+
+        if student_data:
+            cursor.execute("SELECT * FROM attendance WHERE student_id = ? ORDER BY date DESC, time DESC", (student_data["id"],))
+            attendance_records = cursor.fetchall()
+
+            # Calculate working days and attendance percentage
+            cursor.execute("SELECT COUNT(DISTINCT date) as total_working_days FROM attendance WHERE department = ?", (student_data["department"],))
+            total_days_row = cursor.fetchone()
+            total_working_days = total_days_row["total_working_days"] if total_days_row and total_days_row["total_working_days"] > 0 else len(attendance_records)
+            
+            present_days = len(attendance_records)
+            total_days = max(total_working_days, present_days)
+            turnout_pct = round((present_days / total_days * 100), 1) if total_days > 0 else 100.0
+
+            stats = {
+                "total_days": total_days,
+                "present_days": present_days,
+                "absent_days": max(0, total_days - present_days),
+                "percentage": turnout_pct,
+                "is_safe": turnout_pct >= 75.0
+            }
+        else:
+            flash(f"Roll Number '{roll}' not found. Please register your face first.", "warning")
+        conn.close()
+
+    return render_template(
+        "student_portal.html",
+        roll=roll,
+        student=student_data,
+        records=attendance_records,
+        stats=stats
+    )
 
 # --- Daily Mobile Self-Attendance Page ---
 @app.route("/checkin")
@@ -225,8 +373,8 @@ def verify_mobile_attendance():
     if active_session["session_code"] != code:
         return jsonify({"success": False, "message": "Session expired or invalid code!"})
 
-    if not roll_number or not image_b64:
-        return jsonify({"success": False, "message": "Roll Number and Face image required!"})
+    if not roll_number or not image_b64 or "base64," not in image_b64:
+        return jsonify({"success": False, "message": "Roll Number and a valid face selfie are required!"})
 
     today = datetime.now().strftime("%Y-%m-%d")
     current_time = datetime.now().strftime("%H:%M:%S")
@@ -252,7 +400,8 @@ def verify_mobile_attendance():
         return jsonify({"success": False, "message": "No face biometric registered for this student!"})
 
     registered_vector = np.array(json.loads(encoding_row["encoding_json"]))
-    temp_path = os.path.join(Config.UPLOAD_FOLDER, f"temp_{roll_number}.jpg")
+    temp_filename = f"temp_{roll_number}_{uuid.uuid4().hex[:8]}.jpg"
+    temp_path = os.path.join(Config.UPLOAD_FOLDER, temp_filename)
 
     try:
         header, encoded = image_b64.split("base64,", 1)
@@ -285,11 +434,7 @@ def verify_mobile_attendance():
         """, (student["id"], roll_number, student["name"], student["department"], today, current_time, round(confidence, 2)))
         conn.commit()
 
-        try:
-            import winsound
-            winsound.Beep(1200, 200)
-        except Exception:
-            pass
+        play_hardware_beep(1200, 200)
 
         return jsonify({
             "success": True,
@@ -340,10 +485,8 @@ def students_list():
 
 @app.route("/students/delete/<int:student_id>", methods=["POST"])
 @login_required
+@superadmin_required
 def delete_student(student_id):
-    if session.get("admin_role") == "cr":
-        flash("Permission Denied: Only Main Admin can delete students.", "danger")
-        return redirect(url_for("students_list"))
 
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -352,9 +495,7 @@ def delete_student(student_id):
     
     if student:
         if student["photo_path"]:
-            full_path = os.path.join(Config.UPLOAD_FOLDER, student["photo_path"])
-            if os.path.exists(full_path):
-                os.remove(full_path)
+            delete_student_photo(student["photo_path"])
         cursor.execute("DELETE FROM students WHERE id = ?", (student_id,))
         conn.commit()
         face_engine.reload_known_faces()
@@ -461,6 +602,19 @@ def api_recent_attendance():
     rows = [dict(r) for r in cursor.fetchall()]
     conn.close()
     return jsonify(rows)
+
+# --- Informational & Legal Pages ---
+@app.route("/about")
+def about_page():
+    return render_template("about.html")
+
+@app.route("/privacy")
+def privacy_page():
+    return render_template("privacy.html")
+
+@app.route("/terms")
+def terms_page():
+    return render_template("terms.html")
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))

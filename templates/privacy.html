@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Biometric Privacy Policy - VisionAttend AI</title>
+    <meta name="description" content="VisionAttend AI Biometric Privacy Policy and Data Protection standards.">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+            --dark-bg: #090d16;
+            --glass-card: rgba(18, 26, 43, 0.75);
+            --card-border: rgba(255, 255, 255, 0.08);
+        }
+
+        body {
+            background-color: var(--dark-bg);
+            color: #f1f5f9;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .ambient-glow {
+            position: absolute;
+            top: -150px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 700px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(99, 102, 241, 0.18) 0%, transparent 70%);
+            filter: blur(100px);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .brand-badge {
+            background: var(--primary-gradient);
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+        }
+
+        .btn-glass {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid var(--card-border);
+            color: #cbd5e1;
+            font-size: 0.88rem;
+            font-weight: 600;
+            padding: 8px 18px;
+            border-radius: 50px;
+            text-decoration: none;
+            transition: all 0.25s ease;
+        }
+
+        .btn-glass:hover {
+            background: rgba(255, 255, 255, 0.12);
+            color: white;
+        }
+
+        .policy-card {
+            background: var(--glass-card);
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            padding: 40px;
+            backdrop-filter: blur(16px);
+        }
+
+        .policy-section-title {
+            color: #93c5fd;
+            font-weight: 700;
+            margin-top: 28px;
+            margin-bottom: 12px;
+            font-size: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="ambient-glow"></div>
+
+    <!-- TOPBAR -->
+    <header class="py-3 border-bottom border-secondary border-opacity-10 position-relative z-index-1">
+        <div class="container d-flex align-items-center justify-content-between">
+            <a href="{{ url_for('index') }}" class="d-flex align-items-center gap-2 text-decoration-none text-white">
+                <div class="brand-badge">
+                    <i class="fa-solid fa-shield-halved fs-5"></i>
+                </div>
+                <span class="fs-4 fw-bold">Vision<span class="text-primary">Privacy</span></span>
+            </a>
+
+            <div class="d-flex gap-2">
+                <a href="{{ url_for('index') }}" class="btn-glass">
+                    <i class="fa-solid fa-arrow-left me-1"></i> Home
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <main class="flex-grow-1 py-5 position-relative z-index-1">
+        <div class="container" style="max-width: 860px;">
+            
+            <div class="text-center mb-5">
+                <div class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-3 py-1 rounded-pill small mb-2">
+                    <i class="fa-solid fa-lock me-1"></i> Privacy First AI Architecture
+                </div>
+                <h1 class="fw-bold text-white mb-2">Biometric Privacy Policy</h1>
+                <p class="text-white-50 small mb-0">Effective Date: October 2026 &bull; Compliant with Global Biometric Data Standards</p>
+            </div>
+
+            <div class="policy-card">
+                <p class="lead text-white-50 small mb-4">
+                    At <b>VisionAttend AI</b>, we recognize the supreme sensitivity of facial biometric data. This policy outlines how facial representations are converted, secured, and strictly protected within educational and institutional deployments.
+                </p>
+
+                <h4 class="policy-section-title">
+                    <i class="fa-solid fa-fingerprint text-primary"></i> 1. Mathematical Feature Transformation
+                </h4>
+                <p class="text-white-50 small">
+                    When a student enrolls their face, our computer vision model does not track emotional patterns or continuous surveillance feeds. Instead, the deep convolutional neural network extracts <b>128 mathematical measurements</b> (landmarks corresponding to nodal distance ratios between cheekbones, eye contours, and jawlines).
+                </p>
+                <div class="p-3 rounded-3 bg-dark bg-opacity-50 border border-secondary border-opacity-10 mb-3 text-white-50 small">
+                    <i class="fa-solid fa-circle-check text-success me-2"></i><b>Zero Reverse Engineering:</b> A 128-d floating point array cannot be reverse-engineered into a high-resolution portrait photograph.
+                </div>
+
+                <h4 class="policy-section-title">
+                    <i class="fa-solid fa-database text-info"></i> 2. Data We Collect & Store
+                </h4>
+                <ul class="text-white-50 small d-flex flex-column gap-2 mb-3">
+                    <li><b>Academic Profile:</b> Student Roll Number, Full Name, Department, Semester, and optional Contact details.</li>
+                    <li><b>Biometric Landmark Vector:</b> Serialized JSON array of 128 floating-point numerical embeddings.</li>
+                    <li><b>Attendance Event Logs:</b> Calendar Date, Check-in Timestamp, Biometric Confidence score, and Status.</li>
+                </ul>
+
+                <h4 class="policy-section-title">
+                    <i class="fa-solid fa-ban text-danger"></i> 3. Strict Non-Sharing Policy
+                </h4>
+                <p class="text-white-50 small">
+                    VisionAttend AI adheres to a strict <b>Zero Commercialization</b> stance:
+                </p>
+                <ul class="text-white-50 small d-flex flex-column gap-2 mb-3">
+                    <li>We <b>never</b> sell, license, rent, or trade student biometrics or attendance records to advertisers, third-party data brokers, or commercial AI training aggregators.</li>
+                    <li>Data remains strictly hosted within the institution's local deployment server or dedicated private database instance.</li>
+                </ul>
+
+                <h4 class="policy-section-title">
+                    <i class="fa-solid fa-user-xmark text-warning"></i> 4. Student Rights & Data Erasure
+                </h4>
+                <p class="text-white-50 small">
+                    Every student retains full data autonomy under institutional privacy guidelines:
+                </p>
+                <ul class="text-white-50 small d-flex flex-column gap-2 mb-4">
+                    <li><b>Right to Inspect:</b> Students can view their complete attendance history anytime through the <a href="{{ url_for('my_attendance') }}" class="text-primary text-decoration-none">Student Portal</a>.</li>
+                    <li><b>Right to Erasure:</b> Upon graduation or departure, an authorized administrator can permanently delete the student's profile, enrolled photo, and all associated face encodings with one click.</li>
+                </ul>
+
+                <div class="pt-4 border-top border-secondary border-opacity-10 d-flex justify-content-between align-items-center flex-wrap gap-2 text-white-50 small">
+                    <span>Questions regarding privacy? Contact your Department Administrator.</span>
+                    <a href="{{ url_for('terms_page') }}" class="text-primary text-decoration-none">View Terms of Service ➔</a>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="py-4 border-top border-secondary border-opacity-10 text-white-50 small mt-auto">
+        <div class="container d-flex flex-wrap align-items-center justify-content-between gap-3">
+            <div>&copy; 2026 VisionAttend AI &bull; Biometric Privacy Standards.</div>
+            <div class="d-flex gap-3">
+                <a href="{{ url_for('about_page') }}" class="text-white-50 text-decoration-none">About Us</a>
+                <a href="{{ url_for('terms_page') }}" class="text-white-50 text-decoration-none">Terms of Service</a>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
