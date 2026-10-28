@@ -4,6 +4,9 @@ FROM python:3.10-slim
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
+# CRUCIAL: Limits C++ compilation to 1 thread to prevent exceeding Render's 8GB RAM build limit
+ENV CMAKE_BUILD_PARALLEL_LEVEL=1
+
 WORKDIR /app
 
 # Install system dependencies required for OpenCV and compiling dlib
